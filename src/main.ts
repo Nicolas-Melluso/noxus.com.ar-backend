@@ -7,7 +7,7 @@ async function bootstrap() {
   console.log("Llego algo");
   
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://noxus.com.ar', 'https://api.noxus.com.ar'],
+    origin: ['http://localhost:5173', 'https://noxus.com.ar', 'https://api.noxus.com.ar', 'http://api.noxus.com.ar','http://api.noxus.com.ar:3000',  'https://api.noxus.com.ar:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
