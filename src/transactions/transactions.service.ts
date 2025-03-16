@@ -16,6 +16,8 @@ export class TransactionsService {
   ) {}
 
   findAll(): Promise<Transaction[]> {
+    console.log("intentando");
+    
     return this.transactionsRepository.find();
   }
 
