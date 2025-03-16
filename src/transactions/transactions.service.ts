@@ -16,8 +16,6 @@ export class TransactionsService {
   ) {}
 
   findAll(): Promise<Transaction[]> {
-    console.log("intentando");
-    
     return this.transactionsRepository.find();
   }
 
@@ -27,7 +25,7 @@ export class TransactionsService {
 
   async create(dto: CreateTransactionDto) {
           // Verificar que el usuario exista
-          const user = await this.usersRepository.findOneBy({ userId: dto.userId });
+            const user = await this.usersRepository.findOneBy({ userId: dto.userId });
           if (!user) {
             throw new NotFoundException('Usuario no encontrado');
           }

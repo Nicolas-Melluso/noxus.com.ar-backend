@@ -2,7 +2,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { Transaction } from './transactions.entity';
-import { UsersService } from 'src/users/users.service';
 import { CreateTransactionDto } from 'src/users/user.dto';
 
 @Controller('transactions')
