@@ -11,49 +11,85 @@ export class TwitchUsersService {
     private readonly twitchUsersRepository: Repository<TwitchUser>,
   ) {}
 
-  // Obtener o crear un usuario
-  async findOrCreate(username: string): Promise<TwitchUser> {
+  // Generar un nombre aleatorio para el dragón
+  generateRandomName(): string {
+    const prefixes = ['Dra', 'Nox', 'Zyl', 'Kai', 'Fen'];
+    const suffixes = ['gon', 'rax', 'thar', 'vyr', 'nor'];
+    const numbers = Math.floor(Math.random() * 100);
+    return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffixes[Math.floor(Math.random() * suffixes.length)]}${numbers}`;
+  }
+
+  // Generar características aleatorias para el dragón
+  generateRandomTraits(): Record<string, any> {
+    const personalities = ['valiente', 'juguetón', 'sabio', 'travieso', 'noble'];
+    const abilities = ['volar alto', 'escupir fuego', 'controlar el clima', 'respirar bajo el agua'];
+    return {
+      personality: personalities[Math.floor(Math.random() * personalities.length)],
+      ability: abilities[Math.floor(Math.random() * abilities.length)],
+    };
+  }
+
+  // Calcular el siguiente estado del dragón
+  calculateNextStage(currentStage: string): string {
+    const stages = ['egg', 'baby', 'young', 'adult', 'elder', 'ancient'];
+    const currentIndex = stages.indexOf(currentStage);
+    if (currentIndex < stages.length - 1) {
+      return stages[currentIndex + 1];
+    }
+    return currentStage;
+  }
+
+  // Actualizar el dragón del usuario
+  async updateDragon(username: string): Promise<string> {
     let user = await this.twitchUsersRepository.findOneBy({ username });
 
     if (!user) {
-      // Si el usuario no existe, crearlo con 0 mensajes
-      user = this.twitchUsersRepository.create({ username, messagesSent: 0 });
+      // Si el usuario no existe, crearlo con un huevo misterioso
+      const dragonName = this.generateRandomName();
+      const traits = this.generateRandomTraits();
+      user = this.twitchUsersRepository.create({
+        username,
+        dragonName,
+        dragonStage: 'egg',
+        lastUpdated: new Date(),
+        traits,
+      });
       await this.twitchUsersRepository.save(user);
+
+      return `¡${username}, te ha sido entregado un dragón! Su nombre es ${dragonName}. Cuida bien tu huevo misterioso. 🥚`;
     }
 
-    return user;
-  }
+    // Calcular el tiempo transcurrido desde la última actualización
+    const now = new Date();
+    const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000; // Diferencia en segundos
 
-  // Incrementar el contador de mensajes
-  async incrementMessages(username: string): Promise<TwitchUser> {
-    const user = await this.findOrCreate(username);
+    // Determinar si el dragón crece basado en el tiempo transcurrido
+    let nextStage = user.dragonStage;
+    if (timeDiff >= 600) { // Ejemplo: crece cada 10 minutos
+      nextStage = this.calculateNextStage(user.dragonStage);
+    }
 
-    // Incrementar el contador de mensajes
-    user.messagesSent += 1;
-    return this.twitchUsersRepository.save(user);
-  }
+    // Actualizar el dragón
+    user.dragonStage = nextStage;
+    user.lastUpdated = now;
+    await this.twitchUsersRepository.save(user);
 
-  // Obtener el nivel del usuario
-  getLevel(messagesSent: number): { level: number; roleName: string } {
-    const levels = [
-      { min: 0, max: 199, name: 'Lurker 🐌' },
-      { min: 200, max: 499, name: 'Espectador Novato 👀' },
-      { min: 500, max: 999, name: 'Curioso Aprendiz 🧑‍🎓' },
-      { min: 1000, max: 1999, name: 'Explorador Fiel 🧭' },
-      { min: 2000, max: 3999, name: 'Guardián del Chat 🛡️' },
-      { min: 4000, max: 7999, name: 'Guerrero del Stream ⚔️' },
-      { min: 8000, max: 15999, name: 'Defensor del Reino 🏰' },
-      { min: 16000, max: 31999, name: 'Maestro del Chat 🧙‍♂️' },
-      { min: 32000, max: 63999, name: 'Dragón Joven 🔥' },
-      { min: 64000, max: 127999, name: 'Dragón Legendario 🐉' },
-      { min: 128000, max: Infinity, name: 'Dragón Supremo 🌟👑' },
-    ];
-
-    // Encontrar el nivel correspondiente
-    const level = levels.find((lvl) => messagesSent >= lvl.min && messagesSent <= lvl.max);
-    return {
-      level: levels.indexOf(level) + 1,
-      roleName: level.name,
-    };
+    // Construir el mensaje de respuesta
+    switch (user.dragonStage) {
+      case 'egg':
+        return `Tu dragón sigue siendo un huevo misterioso. Dale tiempo para eclosionar. 🥚`;
+      case 'baby':
+        return `${user.dragonName} es un Dragón bebé. ¡Cuida bien a tu pequeño dragón! ❤️`;
+      case 'young':
+        return `${user.dragonName} es un Dragón joven. Le encanta ${user.traits.ability}. 🐉`;
+      case 'adult':
+        return `${user.dragonName} es un Dragón adulto. Es ${user.traits.personality} y protege su territorio. 🔥`;
+      case 'elder':
+        return `${user.dragonName} es un Dragón mayor. Tiene mucha sabiduría y experiencia. 🌟`;
+      case 'ancient':
+        return `${user.dragonName} es un Dragón ancestral. ¡Es una leyenda viviente! ⭐👑`;
+      default:
+        return `Tu dragón está en un estado desconocido. ¡Algo extraño ha ocurrido! 😱`;
+    }
   }
 }

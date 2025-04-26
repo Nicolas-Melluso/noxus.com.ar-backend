@@ -1,21 +1,21 @@
 // src/twitch/twitch.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { TwitchUsersService } from './twitch-users.service';
 
 @Controller('twitch')
 export class TwitchController {
   constructor(private readonly twitchUsersService: TwitchUsersService) {}
 
-  // Endpoint para registrar mensajes
-  @Post('message')
-  async handleMessage(@Body() messageEvent: any) {
-    const username = messageEvent?.event?.user?.username || 'UsuarioDesconocido';
+  @Post('dragon')
+  async handleDragonCommand(@Body() command: any, @Res() res: Response) {
+    const username = command?.event?.user?.username || 'UsuarioDesconocido';
 
-    // Incrementar el contador de mensajes del usuario
-    await this.twitchUsersService.incrementMessages(username);
+    // Obtener o actualizar el dragón del usuario
+    const responseMessage = await this.twitchUsersService.updateDragon(username);
 
-    console.log(messageEvent);
-
-    return; // No devolvemos nada al chat
+    // Enviar la respuesta al chat
+    res.type('text/plain');
+    res.send(responseMessage);
   }
 }

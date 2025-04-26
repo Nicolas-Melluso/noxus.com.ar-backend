@@ -1,7 +1,7 @@
 // src/twitch/twitch-user.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('twitch_users') // Cambiamos el nombre de la tabla a twitch_users
+@Entity('twitch_users')
 export class TwitchUser {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,6 +9,15 @@ export class TwitchUser {
   @Column({ unique: true })
   username: string;
 
-  @Column({ default: 0 })
-  messagesSent: number;
+  @Column({ nullable: true })
+  dragonName: string;
+
+  @Column({ default: 'egg' }) // Estados: egg, baby, young, adult, elder, ancient
+  dragonStage: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastUpdated: Date;
+
+  @Column({ type: 'jsonb', nullable: true })
+  traits: Record<string, any>;
 }
