@@ -8,7 +8,7 @@ export class TwitchController {
 
   @Post()
   create(@Body() command: any) {
-    return "Hola llegue" + command
+    return "Hola llegue" + JSON.stringify(command)
   }
 
 }
