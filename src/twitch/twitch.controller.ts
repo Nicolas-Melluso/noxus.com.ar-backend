@@ -8,6 +8,8 @@ export class TwitchController {
 
   @Post()
   create(@Body() command: any) {
+    console.log("Ingresé", command);
+    
     return "Hola llegue" + JSON.stringify(command)
   }
 
