@@ -74,18 +74,15 @@ export class TwitchUsersService {
       return `¡${username}, te ha sido entregado un dragón! Su nombre es ${dragonName}. Cuida bien tu huevo misterioso. 🥚`;
     }
 
-    // Detener el crecimiento si son las 5 AM o si NoxusDev/Noxusdev usa el comando
+    // Detener el crecimiento si son las 5 AM
     const now = new Date();
-    const isStreamOver = now.getHours() >= 5; // Detener a las 5 AM
-    if (isStreamOver || username.toLowerCase() === 'noxusdev') {
+    const isStreamOver = (now.getHours() >= 3 && now.getHours() <= 9); // Detener a las 3 AM y 9 AM
+    if (isStreamOver) {
       user.isGrowing = false;
       user.growthTimerStart = null;
       await this.twitchUsersRepository.save(user);
       return `Parece que tu Dragón está durmiendo. ¡Vuelve mañana para ver si ha crecido! ⏳`;
-    }
-
-    // Reactivar el crecimiento si NoxusDev/Noxusdev usa el comando
-    if (username.toLowerCase() === 'noxusdev') {
+    } else {
       user.isGrowing = true;
       user.growthTimerStart = new Date();
       await this.twitchUsersRepository.save(user);
