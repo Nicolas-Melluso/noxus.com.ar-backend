@@ -3,8 +3,6 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  console.log("Llego algo");
   
   app.enableCors({
     origin: ['http://localhost:5173', 'https://noxus.com.ar', 'https://api.noxus.com.ar', 'http://api.noxus.com.ar','http://api.noxus.com.ar:3000',  'https://api.noxus.com.ar:3000'],
