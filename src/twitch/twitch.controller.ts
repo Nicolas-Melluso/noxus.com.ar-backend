@@ -1,31 +1,27 @@
 // src/twitch/twitch.controller.ts
 import { Controller, Post, Body, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { TwitchUsersService } from './twitch-users.service';
 
 @Controller('twitch')
 export class TwitchController {
-  constructor() {}
+  constructor(private readonly twitchUsersService: TwitchUsersService) {}
 
   @Post()
-  create(@Body() command: any, @Res() res: Response) {
+  async create(@Body() command: any, @Res() res: Response) {
     console.log("Ingresé", command);
 
     // Extraer el nombre de usuario del evento
     const username = command?.event?.user?.username || 'UsuarioDesconocido';
 
-    // Simular el cálculo del tiempo acumulado
-    const watchTime = Math.floor(Math.random() * 5000); // Tiempo aleatorio entre 0 y 5000 segundos
+    // Incrementar el contador de mensajes del usuario
+    const user = await this.twitchUsersService.incrementMessages(username);
 
-    // Asignar un rol basado en el tiempo acumulado
-    let role = 'Lurker 🐌';
-    if (watchTime >= 60 && watchTime < 300) role = 'Espectador Novato 👀';
-    else if (watchTime >= 300 && watchTime < 900) role = 'Curioso Aprendiz 🧑‍🎓';
-    else if (watchTime >= 900 && watchTime < 1800) role = 'Explorador Fiel 🧭';
-    else if (watchTime >= 1800 && watchTime < 3600) role = 'Guardián del Chat 🛡️';
-    else if (watchTime >= 3600) role = 'Dragón Supremo 🌟👑';
+    // Obtener el nivel del usuario
+    const { level, roleName } = this.twitchUsersService.getLevel(user.messagesSent);
 
     // Construir la respuesta en formato text/plain
-    const responseText = `Tu rol es: ${role} (${watchTime} segundos)`;
+    const responseText = `Tu rol es: ${roleName} (Nivel ${level}, ${user.messagesSent} mensajes)`;
 
     // Enviar la respuesta al cliente
     res.type('text/plain');
