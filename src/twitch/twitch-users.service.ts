@@ -13,8 +13,8 @@ export class TwitchUsersService {
 
   // Generar un nombre aleatorio para el dragón
   generateRandomName(): string {
-    const prefixes = ['Dra', 'Nox', 'Zyl', 'Kai', 'Fen'];
-    const suffixes = ['gon', 'rax', 'thar', 'vyr', 'nor'];
+    const prefixes = ['Dra', 'Nox', 'Zyl', 'Kai', 'Frie', 'God', 'Anash'];
+    const suffixes = ['gon', 'rax', 'thar', 'vyr', 'nor', 'ren', 'zyx'];
     const numbers = Math.floor(Math.random() * 100);
     return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffixes[Math.floor(Math.random() * suffixes.length)]}${numbers}`;
   }
@@ -22,7 +22,7 @@ export class TwitchUsersService {
   // Generar características aleatorias para el dragón
   generateRandomTraits(): Record<string, any> {
     const personalities = ['valiente', 'juguetón', 'sabio', 'travieso', 'noble'];
-    const abilities = ['volar alto', 'escupir fuego', 'controlar el clima', 'respirar bajo el agua'];
+    const abilities = ['volar alto', 'escupir fuego', 'controlar el clima', 'respirar bajo el agua', 'subscribirse', 'jugar voley', 'meterse donde no lo llaman'];
     return {
       personality: personalities[Math.floor(Math.random() * personalities.length)],
       ability: abilities[Math.floor(Math.random() * abilities.length)],
@@ -39,6 +39,19 @@ export class TwitchUsersService {
     return currentStage;
   }
 
+  // Calcular el tiempo necesario para la siguiente etapa
+  getRequiredTimeForNextStage(currentStage: string): number {
+    const stageTimes = {
+      egg: 0, // Inmediato
+      baby: 10 * 60, // 10 minutos
+      young: 20 * 60, // 20 minutos
+      adult: 30 * 60, // 30 minutos
+      elder: 60 * 60, // 1 hora
+      ancient: 2 * 60 * 60, // 2 horas
+    };
+    return stageTimes[currentStage] || 0;
+  }
+
   // Actualizar el dragón del usuario
   async updateDragon(username: string): Promise<string> {
     let user = await this.twitchUsersRepository.findOneBy({ username });
@@ -53,25 +66,48 @@ export class TwitchUsersService {
         dragonStage: 'egg',
         lastUpdated: new Date(),
         traits,
+        growthTimerStart: new Date(), // Comienza el timer
+        isGrowing: true, // Activar el crecimiento
       });
       await this.twitchUsersRepository.save(user);
 
       return `¡${username}, te ha sido entregado un dragón! Su nombre es ${dragonName}. Cuida bien tu huevo misterioso. 🥚`;
     }
 
-    // Calcular el tiempo transcurrido desde la última actualización
+    // Detener el crecimiento si son las 5 AM o si NoxusDev/Noxusdev usa el comando
     const now = new Date();
-    const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000; // Diferencia en segundos
-
-    // Determinar si el dragón crece basado en el tiempo transcurrido
-    let nextStage = user.dragonStage;
-    if (timeDiff >= 600) { // Ejemplo: crece cada 10 minutos
-      nextStage = this.calculateNextStage(user.dragonStage);
+    const isStreamOver = now.getHours() >= 5; // Detener a las 5 AM
+    if (isStreamOver || username.toLowerCase() === 'noxusdev') {
+      user.isGrowing = false;
+      user.growthTimerStart = null;
+      await this.twitchUsersRepository.save(user);
+      return `Parece que tu Dragón está durmiendo. ¡Vuelve mañana para ver si ha crecido! ⏳`;
     }
 
-    // Actualizar el dragón
-    user.dragonStage = nextStage;
-    user.lastUpdated = now;
+    // Reactivar el crecimiento si NoxusDev/Noxusdev usa el comando
+    if (username.toLowerCase() === 'noxusdev') {
+      user.isGrowing = true;
+      user.growthTimerStart = new Date();
+      await this.twitchUsersRepository.save(user);
+    }
+
+    // Calcular el tiempo transcurrido desde la última actualización
+    if (user.isGrowing && user.growthTimerStart) {
+      const timeDiff = (now.getTime() - user.growthTimerStart.getTime()) / 1000; // Diferencia en segundos
+      const requiredTime = this.getRequiredTimeForNextStage(user.dragonStage);
+
+      // Adelantar el reloj por interacción (2 minutos adicionales)
+      const interactionBonus = 2 * 60; // 2 minutos en segundos
+      const totalElapsedTime = timeDiff + interactionBonus;
+
+      if (totalElapsedTime >= requiredTime) {
+        user.dragonStage = this.calculateNextStage(user.dragonStage);
+        user.lastUpdated = now;
+        user.growthTimerStart = now; // Reiniciar el timer para la siguiente etapa
+      }
+    }
+
+    // Guardar los cambios
     await this.twitchUsersRepository.save(user);
 
     // Construir el mensaje de respuesta

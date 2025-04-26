@@ -18,6 +18,12 @@ export class TwitchUser {
   @Column({ type: 'timestamp', nullable: true })
   lastUpdated: Date;
 
-  @Column({ type: 'json', nullable: true }) // Cambiamos jsonb a json
+  @Column({ type: 'json', nullable: true })
   traits: Record<string, any>;
+
+  @Column({ type: 'timestamp', nullable: true })
+  growthTimerStart: Date;
+
+  @Column({ default: false })
+  isGrowing: boolean;
 }
