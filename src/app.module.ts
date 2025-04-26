@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
+import { TwitchModule } from './twitch/twitch.module';
+
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { UsersModule } from './users/users.module';
     synchronize: false,
     }),
     TransactionsModule,
-    UsersModule],
+    UsersModule,
+    TwitchModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

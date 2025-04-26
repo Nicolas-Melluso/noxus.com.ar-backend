@@ -7,4 +7,4 @@ import { TwitchController } from './twitch.controller';
   providers: [],
   controllers: [TwitchController],
 })
-export class TransactionsModule {}
+export class TwitchModule {}
