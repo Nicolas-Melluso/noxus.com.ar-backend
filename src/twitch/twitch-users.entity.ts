@@ -1,8 +1,6 @@
 // src/twitch/twitch-user.entity.ts
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
-
 @Entity('twitch_users')
 export class TwitchUser {
   @PrimaryGeneratedColumn()
