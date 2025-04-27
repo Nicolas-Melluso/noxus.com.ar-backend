@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TwitchUser } from './twitch-user.entity';
+import { TwitchUser } from './twitch-users.entity';
 import { Dragon } from './dragon.entity';
 
 @Injectable()
