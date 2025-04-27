@@ -11,167 +11,159 @@ export class TwitchUsersService {
     private readonly twitchUsersRepository: Repository<TwitchUser>,
   ) {}
 
-  getXpForStage(stage: string): number {
-    const xpStages = {
-      egg: 0,
-      baby: 100,
-      young: 300,
-      adult: 700,
-      elder: 1500,
-      ancient: 3000,
-    };
-    return xpStages[stage] || 0;
-  }
+  // XP requerida para cada etapa (en minutos)
+  private readonly xpStages = {
+    egg: 0,
+    baby: 5000,
+    young: 10000,
+    mid: 20000,
+    adult: 40000,
+    elder: 130000,
+    ancient: 260000,
+  };
 
-  // Generar un nombre aleatorio para el dragón
-  generateRandomName(): string {
+  // Traducción de etapas para los mensajes
+  private readonly stageTranslations = {
+    egg: 'Huevo',
+    baby: 'Bebé',
+    young: 'Joven',
+    mid: 'Adolescente',
+    adult: 'Adulto',
+    elder: 'Mayor',
+    ancient: 'Ancestral',
+  };
+
+  // Generar nombre aleatorio (más creativo)
+  generateDragonName(): string {
     const prefixes = [
-      'Dra', 'Nox', 'Zyl', 'Kai', 'Frie', 'God', 'Anash',
-      'Aur', 'Veln', 'Thal', 'Ignis', 'Zephyr', 'Lun', 'Sol',
-      'Neb', 'Astra', 'Pyro', 'Hydro', 'Geo', 'Cryo', 'Electro'
+      'Aurora', 'Vortex', 'Ignis', 'Zephyr', 'Lunar', 'Solaris',
+      'Nebula', 'Astrum', 'Pyralis', 'Hydros', 'Geonis', 'Cryos',
     ];
     const suffixes = [
-      'gon', 'rax', 'thar', 'vyr', 'nor', 'ren', 'zyx',
-      'thos', 'mar', 'vex', 'nir', 'syl', 'kai', 'thra',
-      'zul', 'grim', 'fyr', 'nox', 'lith', 'vent', 'mir'
+      'Gore', 'Raxton', 'Thalass', 'Vyrn', 'Norelia', 'Zyphra',
+      'Thorn', 'Maris', 'Vexel', 'Nirvana', 'Sylvan', 'Kaelith',
     ];
-    const numbers = Math.floor(Math.random() * 100);
-    return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffixes[Math.floor(Math.random() * suffixes.length)]}${numbers}`;
+    const number = Math.floor(Math.random() * 1000);
+    return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffixes[Math.floor(Math.random() * suffixes.length)]}${number}`;
   }
 
-
-  // Generar características aleatorias para el dragón
-  generateRandomTraits(): Record<string, any> {
-    const personalities = ['valiente', 'juguetón', 'sabio', 'travieso', 'noble'];
-    const abilities = ['volar alto', 'escupir fuego', 'controlar el clima', 'respirar bajo el agua', 'subscribirse', 'jugar voley', 'meterse donde no lo llaman'];
+  // Generar características en español
+  generateTraits(): Record<string, any> {
+    const personalities = ['Valiente', 'Juguetón', 'Sabio', 'Travieso', 'Noble'];
+    const abilities = ['Volar alto', 'Escupir fuego', 'Controlar el clima', 'Respirar bajo el agua'];
     return {
-      personality: personalities[Math.floor(Math.random() * personalities.length)],
-      ability: abilities[Math.floor(Math.random() * abilities.length)],
+      personalidad: personalities[Math.floor(Math.random() * personalities.length)],
+      habilidad: abilities[Math.floor(Math.random() * abilities.length)],
     };
   }
 
-  // Calcular el siguiente estado del dragón
-  calculateNextStage(currentStage: string): string {
-    const stages = ['egg', 'baby', 'young', 'adult', 'elder', 'ancient'];
-    const currentIndex = stages.indexOf(currentStage);
-    if (currentIndex < stages.length - 1) {
-      return stages[currentIndex + 1];
-    }
-    return currentStage;
-  }
-
+  // Detalles del huevo (con más variedad)
   generateEggDetails(): { eggType: string; rarity: string } {
-    const eggTypes = ['', 'Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra']; // Eliminamos valores vacíos
+    const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
     const rarities = [
-      { name: 'Común', chance: 0.75 },
-      { name: 'Raro', chance: 0.15 },
-      { name: 'Muy Raro', chance: 0.06 },
-      { name: 'Épico', chance: 0.03 },
-      { name: 'Mítico', chance: 0.008 },
-      { name: 'Legendario', chance: 0.002 },
+      { nombre: 'Común', probabilidad: 0.75 },
+      { nombre: 'Raro', probabilidad: 0.15 },
+      { nombre: 'Épico', probabilidad: 0.06 },
+      { nombre: 'Legendario', probabilidad: 0.03 },
+      { nombre: 'Mítico', probabilidad: 0.009 },
+      { nombre: 'Celestial', probabilidad: 0.001 },
     ];
 
-    const randomEggType = eggTypes[Math.floor(Math.random() * eggTypes.length)];
-
-    let cumulativeChance = 0;
-    const randomRarity = rarities.find((rarity) => {
-      cumulativeChance += rarity.chance;
-      return Math.random() < cumulativeChance;
-    });
+    let probabilidadAcumulada = 0;
+    const rareza = rarities.find(r => {
+      probabilidadAcumulada += r.probabilidad;
+      return Math.random() < probabilidadAcumulada;
+    })?.nombre || 'Común';
 
     return {
-      eggType: randomEggType,
-      rarity: randomRarity?.name || 'Común',
+      eggType: eggTypes[Math.floor(Math.random() * eggTypes.length)],
+      rarity: rareza,
     };
   }
 
-  // Historia por etapa
-  getStageStory(dragonName: string, eggType: string, rarity: string, stage: string): string {
-    const stories = {
-      baby: `El ${eggType} ${dragonName} ha eclosionado. ¡Es un bebé lleno de energía!`,
-      young: `Tu ${eggType} ${dragonName} ha crecido rápidamente gracias a su rareza ${rarity}. Ahora puede volar cortas distancias.`,
-      adult: `¡${dragonName} ha alcanzado la madurez! Su poder ${eggType} lo hace temido por todos.`,
-      elder: `El sabio ${dragonName} ahora protege el reino con su fuerza ${eggType}.`,
-      ancient: `El legendario ${dragonName} ha vivido durante siglos. Su rareza ${rarity} lo hace único.`,
-    };
-
-    return stories[stage] || 'Tu dragón está en un estado desconocido.';
+  // Calcular XP ganada desde la última evolución
+  calculateXpEarned(lastStageTime: Date): number {
+    const now = new Date();
+    const diffSegundos = (now.getTime() - lastStageTime.getTime()) / 1000;
+    return Math.floor(diffSegundos / 60); // 1 XP por minuto real
   }
 
+  // Verificar si el dragón puede evolucionar
+  canEvolve(currentStage: string, xp: number): boolean {
+    return xp >= this.xpStages[currentStage];
+  }
+
+  // Obtener mensaje de evolución
+  getEvolutionMessage(dragonName: string, eggType: string, rarity: string, newStage: string): string {
+    const mensajes = {
+      baby: `¡El Huevo ${eggType} ha eclosionado! ${dragonName} es un Dragón Bebé. ¡Cuida a tu pequeño! 🐣`,
+      young: `¡${dragonName} ha crecido! Ahora es un Dragón Joven ${eggType}. Le encanta ${this.generateTraits().habilidad}. 🐉`,
+      mid: `¡${dragonName} está experimentando la adolescencia! Es un Dragón con mucho para ofrecer ${eggType}. 💥`,
+      adult: `¡${dragonName} alcanzó la madurez! Es un Dragón Adulto ${eggType}. Su poder es ${rarity.toLowerCase()}. 🔥`,
+      elder: `¡${dragonName} es ahora un Dragón Mayor! Protege el reino con su fuerza ${eggType}. 🌟`,
+      ancient: `¡${dragonName} se ha convertido en un Dragón Ancestral! Su rareza ${rarity} lo hace legendario. ⭐👑`,
+    };
+    return mensajes[newStage] || '¡Tu dragón ha evolucionado!';
+  }
+
+  // Actualizar estado del dragón
   async updateDragon(username: string): Promise<string> {
     let user = await this.twitchUsersRepository.findOneBy({ username });
-    let story = ''
 
     if (!user) {
-      // Crear usuario con XP inicial
-      const dragonName = this.generateRandomName();
-      const traits = this.generateRandomTraits();
+      // Crear nuevo usuario
       const { eggType, rarity } = this.generateEggDetails();
+      const dragonName = this.generateDragonName();
+      const traits = this.generateTraits();
 
       user = this.twitchUsersRepository.create({
         username,
         dragonName,
         dragonStage: 'egg',
-        lastUpdated: new Date(),
+        stageStartTime: new Date(), // Tiempo de inicio de la etapa
         traits,
-        growthTimerStart: new Date(),
-        isGrowing: true,
         eggType,
         rarity,
         xp: 0,
       });
       await this.twitchUsersRepository.save(user);
-
-      return `¡${username}, te ha sido entregado un ${rarity} Huevo ${eggType}! Su nombre es ${dragonName}. 🥚`;
+      return `¡${username}, te ha sido entregado un Huevo ${eggType} ${rarity}! Su nombre es ${dragonName}. 🥚`;
     }
 
     // Detener crecimiento a las 5 AM
     const now = new Date();
-    const isStreamOver = now.getHours() >= 5;
-    if (isStreamOver) {
+    if (now.getHours() >= 5 && now.getHours <= 9) {
       user.isGrowing = false;
-      user.growthTimerStart = null;
       await this.twitchUsersRepository.save(user);
       return `Tu dragón está durmiendo. ¡Vuelve mañana! ⏳`;
     }
 
-    // Calcular tiempo transcurrido y XP ganada
-    if (user.isGrowing && user.lastUpdated) {
-      const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000; // Segundos desde última interacción
-      const interactionBonus = 1 * 60; // 1 minuto de bonus (equivalente a 1 XP)
-      const totalElapsedTime = timeDiff + interactionBonus;
+    // Calcular XP ganada
+    const xpGanada = this.calculateXpEarned(user.stageStartTime);
+    user.xp += xpGanada;
 
-      // XP ganada: 1 XP por cada minuto real + 1 XP por interacción
-      const xpGained = Math.floor(totalElapsedTime / 60); // Convertir segundos a minutos
-      user.xp += xpGained;
-
-      // XP requerida para la siguiente etapa
-      const nextStage = this.calculateNextStage(user.dragonStage);
-      const requiredXp = this.getXpForStage(nextStage);
-
-      // Si tiene suficiente XP, evoluciona
-      if (user.xp >= requiredXp && nextStage !== user.dragonStage) {
-        user.dragonStage = nextStage;
-        user.lastUpdated = now; // Reiniciar timer para la siguiente etapa
-        user.xp = 0;
-        story = this.getStageStory(user.dragonName, user.eggType, user.rarity, user.dragonStage);
-        return ` ¡Tu dragón ha evolucionado a ${user.dragonStage}! 🎉 Ahora tiene ${user.xp}/${requiredXp} XP.`;
-      } else {
-        // Actualizar el timer incluso si no evoluciona
-        user.lastUpdated = now;
-        await this.twitchUsersRepository.save(user);
-      }
+    // Verificar evolución
+    const nextStage = this.calculateNextStage(user.dragonStage);
+    if (this.canEvolve(user.dragonStage, user.xp)) {
+      user.dragonStage = nextStage;
+      user.xp = 0;
+      user.stageStartTime = new Date(); // Reiniciar timer para la nueva etapa
+      const mensajeEvolucion = this.getEvolutionMessage(user.dragonName, user.eggType, user.rarity, nextStage);
+      await this.twitchUsersRepository.save(user);
+      return mensajeEvolucion;
     }
 
-    // Guardar cambios
+    // Guardar progreso y enviar mensaje
     await this.twitchUsersRepository.save(user);
+    const xpRequerida = this.xpStages[nextStage];
+    const stageName = this.stageTranslations[user.dragonStage];
+    return `Tu Dragón ${stageName} ${user.dragonName} (${user.rarity} ${user.eggType}) lleva ${user.xp}/${xpRequerida} XP. ¡Sigue interactuando!`;
+  }
 
-    // Mensaje con progreso de XP
-    const currentXp = user.xp;
-    const nextStage = this.calculateNextStage(user.dragonStage);
-    const requiredXp = this.getXpForStage(nextStage);
-    return `Tu Dragon ${user.dragonName} (${user.rarity} ${user.eggType}) está en etapa ${user.dragonStage}. `
-      + story + `Progreso: ${currentXp}/${requiredXp} XP. ¡Sigue usando !dragon para ganar más!`;
+  // Calcular siguiente etapa (mantener en inglés para la base de datos)
+  private calculateNextStage(currentStage: string): string {
+    const stages = ['egg', 'baby', 'young', 'adult', 'elder', 'ancient'];
+    const index = stages.indexOf(currentStage);
+    return index < stages.length - 1 ? stages[index + 1] : currentStage;
   }
 }
-

@@ -9,30 +9,27 @@ export class TwitchUser {
   @Column({ unique: true })
   username: string;
 
-  @Column({ nullable: true })
+  @Column()
   dragonName: string;
 
-  @Column({ default: 'egg' })
+  @Column({ default: 'egg' }) // Campos en inglés para la base de datos
   dragonStage: string;
 
-  @Column({ type: 'timestamp', nullable: true })
-  lastUpdated: Date;
+  @Column({ type: 'timestamp' })
+  stageStartTime: Date;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: 'json' })
   traits: Record<string, any>;
 
-  @Column({ type: 'timestamp', nullable: true })
-  growthTimerStart: Date;
-
-  @Column({ default: false })
+  @Column({ default: true })
   isGrowing: boolean;
 
-  @Column({ nullable: true })
+  @Column()
   eggType: string;
 
-  @Column({ nullable: true })
+  @Column()
   rarity: string;
 
   @Column({ default: 0 })
-  xp: number; // Nuevo campo para experiencia
+  xp: number;
 }
