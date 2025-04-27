@@ -19,6 +19,7 @@ export class TwitchUsersService {
     return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffixes[Math.floor(Math.random() * suffixes.length)]}${numbers}`;
   }
 
+
   // Generar características aleatorias para el dragón
   generateRandomTraits(): Record<string, any> {
     const personalities = ['valiente', 'juguetón', 'sabio', 'travieso', 'noble'];
@@ -52,6 +53,45 @@ export class TwitchUsersService {
     return stageTimes[currentStage] || 0;
   }
 
+  // Generar tipo y rareza del huevo
+  generateEggDetails(): { eggType: string; rarity: string } {
+    const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
+    const rarities = [
+      { name: 'Común', chance: 0.6 },
+      { name: 'Raro', chance: 0.25 },
+      { name: 'Muy Raro', chance: 0.1 },
+      { name: 'Épico', chance: 0.04 },
+      { name: 'Mítico', chance: 0.009 },
+      { name: 'Legendario', chance: 0.001 },
+    ];
+
+    const randomEggType = eggTypes[Math.floor(Math.random() * eggTypes.length)];
+
+    let cumulativeChance = 0;
+    const randomRarity = rarities.find((rarity) => {
+      cumulativeChance += rarity.chance;
+      return Math.random() < cumulativeChance;
+    });
+
+    return {
+      eggType: randomEggType,
+      rarity: randomRarity?.name || 'Común',
+    };
+  }
+
+  // Historia por etapa
+  getStageStory(dragonName: string, eggType: string, rarity: string, stage: string): string {
+    const stories = {
+      baby: `El ${eggType} ${dragonName} ha eclosionado. ¡Es un bebé lleno de energía!`,
+      young: `Tu ${eggType} ${dragonName} ha crecido rápidamente gracias a su rareza ${rarity}. Ahora puede volar cortas distancias.`,
+      adult: `¡${dragonName} ha alcanzado la madurez! Su poder ${eggType} lo hace temido por todos.`,
+      elder: `El sabio ${dragonName} ahora protege el reino con su fuerza ${eggType}.`,
+      ancient: `El legendario ${dragonName} ha vivido durante siglos. Su rareza ${rarity} lo hace único.`,
+    };
+
+    return stories[stage] || 'Tu dragón está en un estado desconocido.';
+  }
+
   // Actualizar el dragón del usuario
   async updateDragon(username: string): Promise<string> {
     let user = await this.twitchUsersRepository.findOneBy({ username });
@@ -60,49 +100,53 @@ export class TwitchUsersService {
       // Si el usuario no existe, crearlo con un huevo misterioso
       const dragonName = this.generateRandomName();
       const traits = this.generateRandomTraits();
+      const { eggType, rarity } = this.generateEggDetails();
+
       user = this.twitchUsersRepository.create({
         username,
         dragonName,
         dragonStage: 'egg',
         lastUpdated: new Date(),
         traits,
-        growthTimerStart: new Date(), // Comienza el timer
-        isGrowing: true, // Activar el crecimiento
+        growthTimerStart: new Date(),
+        isGrowing: true,
+        eggType,
+        rarity,
       });
       await this.twitchUsersRepository.save(user);
 
-      return `¡${username}, te ha sido entregado un dragón! Su nombre es ${dragonName}. Cuida bien tu huevo misterioso. 🥚`;
+      return `¡${username}, te ha sido entregado un ${rarity} Huevo ${eggType}! Su nombre es ${dragonName}. 🥚`;
     }
 
     // Detener el crecimiento si son las 5 AM
     const now = new Date();
-    const isStreamOver = (now.getHours() >= 3 && now.getHours() <= 9); // Detener a las 3 AM y 9 AM
+    const isStreamOver = now.getHours() >= 5; // Detener a las 5 AM
     if (isStreamOver) {
       user.isGrowing = false;
       user.growthTimerStart = null;
       await this.twitchUsersRepository.save(user);
       return `Parece que tu Dragón está durmiendo. ¡Vuelve mañana para ver si ha crecido! ⏳`;
-    } else {
-      user.isGrowing = true;
-      user.growthTimerStart = new Date();
-      await this.twitchUsersRepository.save(user);
     }
 
     // Calcular el tiempo transcurrido desde la última actualización
-    if (user.isGrowing && user.growthTimerStart) {
-      const timeDiff = (now.getTime() - user.growthTimerStart.getTime()) / 1000; // Diferencia en segundos
+    if (user.isGrowing && user.lastUpdated) {
+      const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000; // Diferencia en segundos
       const requiredTime = this.getRequiredTimeForNextStage(user.dragonStage);
 
       // Adelantar el reloj por interacción (2 minutos adicionales)
       const interactionBonus = 2 * 60; // 2 minutos en segundos
       const totalElapsedTime = timeDiff + interactionBonus;
 
-      console.log(totalElapsedTime);
-
       if (totalElapsedTime >= requiredTime) {
+        const previousStage = user.dragonStage;
         user.dragonStage = this.calculateNextStage(user.dragonStage);
         user.lastUpdated = now;
-        user.growthTimerStart = now; // Reiniciar el timer para la siguiente etapa
+
+        // Mostrar historia si el dragón avanzó de etapa
+        if (previousStage !== user.dragonStage) {
+          const story = this.getStageStory(user.dragonName, user.eggType, user.rarity, user.dragonStage);
+          return `${story} ¡Tu dragón ha crecido a la etapa de ${user.dragonStage}! 🐉`;
+        }
       }
     }
 
@@ -112,7 +156,7 @@ export class TwitchUsersService {
     // Construir el mensaje de respuesta
     switch (user.dragonStage) {
       case 'egg':
-        return `Tu dragón sigue siendo un huevo misterioso. Dale tiempo para eclosionar. 🥚`;
+        return `Tu ${user.rarity} Huevo ${user.eggType} sigue incubándose. Dale tiempo para eclosionar. 🥚`;
       case 'baby':
         return `${user.dragonName} es un Dragón bebé. ¡Cuida bien a tu pequeño dragón! ❤️`;
       case 'young':
@@ -128,3 +172,4 @@ export class TwitchUsersService {
     }
   }
 }
+

@@ -26,4 +26,10 @@ export class TwitchUser {
 
   @Column({ default: false })
   isGrowing: boolean;
+
+  @Column({ nullable: true })
+  eggType: string; // Tipo de huevo (mágico, fuego, espectral, etc.)
+
+  @Column({ nullable: true })
+  rarity: string; // Rareza del huevo (común, raro, muy raro, etc.)
 }
