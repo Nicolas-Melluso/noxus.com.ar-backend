@@ -9,12 +9,12 @@ import { Dragon } from './dragon.entity';
 export class TwitchUsersService {
   private readonly xpStages = {
     egg: 0,
-    baby: 5000,
-    young: 10000,
-    mid: 20000,
-    adult: 40000,
-    elder: 130000,
-    ancient: 260000,
+    baby: 1000,
+    young: 2000,
+    mid: 5000,
+    adult: 10000,
+    elder: 20000,
+    ancient: 50000,
   };
 
   private readonly stageTranslations = {
