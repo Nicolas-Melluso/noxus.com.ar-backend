@@ -13,7 +13,7 @@ export class TwitchUsersService {
 
   // XP requerida para cada etapa (en minutos)
   private readonly xpStages = {
-    egg: 0,
+    egg: 100,
     baby: 5000,
     young: 10000,
     mid: 20000,
@@ -155,7 +155,7 @@ export class TwitchUsersService {
 
   // Calcular siguiente etapa (mantener en inglés para la base de datos)
   private calculateNextStage(currentStage: string): string {
-    const stages = ['egg', 'baby', 'young', 'adult', 'elder', 'ancient'];
+    const stages = ['egg', 'baby', 'young', 'mid', 'adult', 'elder', 'ancient'];
     const index = stages.indexOf(currentStage);
     return index < stages.length - 1 ? stages[index + 1] : currentStage;
   }
