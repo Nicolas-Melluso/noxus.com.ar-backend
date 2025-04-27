@@ -135,6 +135,7 @@ export class TwitchUsersService {
     const currentHour = now.getHours();
 
     if (currentHour >= 5 && currentHour < 9) {
+      console.log(currentHour);
       return `Tu dragón está durmiendo. ¡Vuelve después de las 9 AM! ⏳`;
     }
 
