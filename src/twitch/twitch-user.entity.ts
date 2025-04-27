@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 
-@Entity('twitchUsers')
+@Entity('twitch_users')
 export class TwitchUser {
   @PrimaryGeneratedColumn()
   id: number;
