@@ -130,15 +130,6 @@ export class TwitchUsersService {
       return `¡${username}, te ha sido entregado un Huevo ${eggType} ${rarity}! Su nombre es ${dragonName}. 🥚`;
     }
 
-    // Detener crecimiento a las 5 AM
-    const now = new Date();
-    const currentHour = now.getHours();
-
-    if (currentHour >= 5 && currentHour < 9) {
-      console.log(currentHour);
-      return `Tu dragón está durmiendo. ¡Vuelve después de las 9 AM! ⏳`;
-    }
-
     // Calcular XP ganada
     const xpGanada = this.calculateXpEarned(user.stageStartTime);
     user.xp += xpGanada;
