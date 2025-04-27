@@ -1,28 +1,25 @@
 // src/twitch/twitch-user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('twitch_users')
+@Entity()
 export class TwitchUser {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column()
   username: string;
 
   @Column()
   dragonName: string;
 
-  @Column({ default: 'egg' }) // Campos en inglés para la base de datos
+  @Column()
   dragonStage: string;
 
-  @Column({ type: 'timestamp' })
+  @Column()
   stageStartTime: Date;
 
-  @Column({ type: 'json' })
+  @Column('json')
   traits: Record<string, any>;
-
-  @Column({ default: true })
-  isGrowing: boolean;
 
   @Column()
   eggType: string;
@@ -32,4 +29,7 @@ export class TwitchUser {
 
   @Column({ default: 0 })
   xp: number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  lastInteractionTime: Date;
 }
