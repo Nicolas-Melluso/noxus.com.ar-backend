@@ -97,6 +97,8 @@ export class TwitchUsersService {
       const interactionBonus = 2 * 60; // 2 minutos en segundos
       const totalElapsedTime = timeDiff + interactionBonus;
 
+      console.log(totalElapsedTime);
+
       if (totalElapsedTime >= requiredTime) {
         user.dragonStage = this.calculateNextStage(user.dragonStage);
         user.lastUpdated = now;
