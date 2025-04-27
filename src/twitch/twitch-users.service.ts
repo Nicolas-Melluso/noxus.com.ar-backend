@@ -70,10 +70,11 @@ export class TwitchUsersService {
     return null;
   }
 
-  private getStatusMessage(user: TwitchUser): string {
+  private async getStatusMessage(user: TwitchUser): Promise<string> {
     const nextStage = this.getNextStage(user.dragonStage);
     const requiredXp = this.xpStages[nextStage];
     const stageName = this.stageTranslations[user.dragonStage];
+    await this.twitchUsersRepository.save(user);
     return `Tu Dragón ${stageName} ${user.dragonName} (${user.rarity} ${user.eggType}) lleva ${user.xp}/${requiredXp} XP. ¡Sigue interactuando!`;
   }
 
