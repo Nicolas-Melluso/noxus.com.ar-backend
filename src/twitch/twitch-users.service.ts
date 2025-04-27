@@ -61,7 +61,7 @@ export class TwitchUsersService {
   }
 
   generateEggDetails(): { eggType: string; rarity: string } {
-    const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra']; // Eliminamos valores vacíos
+    const eggTypes = ['', 'Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra']; // Eliminamos valores vacíos
     const rarities = [
       { name: 'Común', chance: 0.75 },
       { name: 'Raro', chance: 0.15 },
@@ -170,7 +170,7 @@ export class TwitchUsersService {
     const currentXp = user.xp;
     const nextStage = this.calculateNextStage(user.dragonStage);
     const requiredXp = this.getXpForStage(nextStage);
-    return `Tu ${user.rarity} ${user.eggType} ${user.dragonName} está en etapa ${user.dragonStage}. `
+    return `Tu Dragon ${user.dragonName} (${user.rarity} ${user.eggType}) está en etapa ${user.dragonStage}. `
       + story + `Progreso: ${currentXp}/${requiredXp} XP. ¡Sigue usando !dragon para ganar más!`;
   }
 }
