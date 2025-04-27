@@ -132,10 +132,10 @@ export class TwitchUsersService {
 
     // Detener crecimiento a las 5 AM
     const now = new Date();
-    if (now.getHours() >= 5 && now.getHours() <= 9) {
-      user.isGrowing = false;
-      await this.twitchUsersRepository.save(user);
-      return `Tu dragón está durmiendo. ¡Vuelve mañana! ⏳`;
+    const currentHour = now.getHours();
+
+    if (currentHour >= 5 && currentHour < 9) {
+      return `Tu dragón está durmiendo. ¡Vuelve después de las 9 AM! ⏳`;
     }
 
     // Calcular XP ganada
@@ -144,6 +144,7 @@ export class TwitchUsersService {
 
     // Verificar evolución
     const nextStage = this.calculateNextStage(user.dragonStage);
+    
     if (this.canEvolve(user.dragonStage, user.xp)) {
       user.dragonStage = nextStage;
       user.xp = 0;
