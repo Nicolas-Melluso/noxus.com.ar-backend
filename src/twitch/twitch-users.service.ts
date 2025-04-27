@@ -60,26 +60,25 @@ export class TwitchUsersService {
     return currentStage;
   }
 
-  // Generar tipo y rareza del huevo
   generateEggDetails(): { eggType: string; rarity: string } {
-    const eggTypes = ['', '', '', '', '', '', '', 'Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
+    const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra']; // Eliminamos valores vacíos
     const rarities = [
-      { name: 'Común', chance: 0.75 }, // Aumentamos a 75%
-      { name: 'Raro', chance: 0.15 }, // Reducimos a 15%
-      { name: 'Muy Raro', chance: 0.06 }, // Reducimos a 6%
-      { name: 'Épico', chance: 0.03 }, // Reducimos a 3%
-      { name: 'Mítico', chance: 0.008 }, // Reducimos a 0.8%
-      { name: 'Legendario', chance: 0.002 }, // Reducimos a 0.2%
+      { name: 'Común', chance: 0.75 },
+      { name: 'Raro', chance: 0.15 },
+      { name: 'Muy Raro', chance: 0.06 },
+      { name: 'Épico', chance: 0.03 },
+      { name: 'Mítico', chance: 0.008 },
+      { name: 'Legendario', chance: 0.002 },
     ];
-  
+
     const randomEggType = eggTypes[Math.floor(Math.random() * eggTypes.length)];
-  
+
     let cumulativeChance = 0;
     const randomRarity = rarities.find((rarity) => {
       cumulativeChance += rarity.chance;
       return Math.random() < cumulativeChance;
     });
-  
+
     return {
       eggType: randomEggType,
       rarity: randomRarity?.name || 'Común',
@@ -122,7 +121,7 @@ export class TwitchUsersService {
       });
       await this.twitchUsersRepository.save(user);
 
-      return `¡${username}, te ha sido entregado un ${rarity} Huevo ${eggType}! Su nombre es ${dragonName}. 🥚 Empieza con 0 XP.`;
+      return `¡${username}, te ha sido entregado un ${rarity} Huevo ${eggType}! Su nombre es ${dragonName}. 🥚`;
     }
 
     // Detener crecimiento a las 5 AM
@@ -137,12 +136,12 @@ export class TwitchUsersService {
 
     // Calcular tiempo transcurrido y XP ganada
     if (user.isGrowing && user.lastUpdated) {
-      const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000;
-      const interactionBonus = 1 * 60; // 1 minuto de bonus por interacción
+      const timeDiff = (now.getTime() - user.lastUpdated.getTime()) / 1000; // Segundos desde última interacción
+      const interactionBonus = 1 * 60; // 1 minuto de bonus (equivalente a 1 XP)
       const totalElapsedTime = timeDiff + interactionBonus;
 
-      // XP ganada en esta interacción
-      const xpGained = Math.floor(totalElapsedTime / 60); // 1 XP por minuto
+      // XP ganada: 1 XP por cada minuto real + 1 XP por interacción
+      const xpGained = Math.floor(totalElapsedTime / 60); // Convertir segundos a minutos
       user.xp += xpGained;
 
       // XP requerida para la siguiente etapa
@@ -152,11 +151,14 @@ export class TwitchUsersService {
       // Si tiene suficiente XP, evoluciona
       if (user.xp >= requiredXp && nextStage !== user.dragonStage) {
         user.dragonStage = nextStage;
-        user.lastUpdated = now;
-        user.xp = 0; // Reiniciar XP para la siguiente etapa
-
+        user.lastUpdated = now; // Reiniciar timer para la siguiente etapa
+        user.xp = 0;
         const story = this.getStageStory(user.dragonName, user.eggType, user.rarity, user.dragonStage);
         return `${story} ¡Tu dragón ha evolucionado a ${user.dragonStage}! 🎉 Ahora tiene ${user.xp}/${requiredXp} XP.`;
+      } else {
+        // Actualizar el timer incluso si no evoluciona
+        user.lastUpdated = now;
+        await this.twitchUsersRepository.save(user);
       }
     }
 
@@ -165,7 +167,8 @@ export class TwitchUsersService {
 
     // Mensaje con progreso de XP
     const currentXp = user.xp;
-    const requiredXp = this.getXpForStage(this.calculateNextStage(user.dragonStage));
+    const nextStage = this.calculateNextStage(user.dragonStage);
+    const requiredXp = this.getXpForStage(nextStage);
     return `Tu ${user.rarity} ${user.eggType} ${user.dragonName} está en etapa ${user.dragonStage}. `
       + `Progreso: ${currentXp}/${requiredXp} XP. ¡Sigue usando !dragon para ganar más!`;
   }
