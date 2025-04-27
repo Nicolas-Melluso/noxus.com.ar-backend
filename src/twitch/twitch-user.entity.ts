@@ -12,7 +12,7 @@ export class TwitchUser {
   @Column({ nullable: true })
   dragonName: string;
 
-  @Column({ default: 'egg' }) // Estados: egg, baby, young, adult, elder, ancient
+  @Column({ default: 'egg' })
   dragonStage: string;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -28,8 +28,11 @@ export class TwitchUser {
   isGrowing: boolean;
 
   @Column({ nullable: true })
-  eggType: string; // Tipo de huevo (mágico, fuego, espectral, etc.)
+  eggType: string;
 
   @Column({ nullable: true })
-  rarity: string; // Rareza del huevo (común, raro, muy raro, etc.)
+  rarity: string;
+
+  @Column({ default: 0 })
+  xp: number; // Nuevo campo para experiencia
 }
