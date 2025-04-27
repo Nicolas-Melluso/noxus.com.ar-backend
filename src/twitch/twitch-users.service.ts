@@ -100,6 +100,7 @@ export class TwitchUsersService {
 
   async updateDragon(username: string): Promise<string> {
     let user = await this.twitchUsersRepository.findOneBy({ username });
+    let story = ''
 
     if (!user) {
       // Crear usuario con XP inicial
@@ -153,8 +154,8 @@ export class TwitchUsersService {
         user.dragonStage = nextStage;
         user.lastUpdated = now; // Reiniciar timer para la siguiente etapa
         user.xp = 0;
-        const story = this.getStageStory(user.dragonName, user.eggType, user.rarity, user.dragonStage);
-        return `${story} ¡Tu dragón ha evolucionado a ${user.dragonStage}! 🎉 Ahora tiene ${user.xp}/${requiredXp} XP.`;
+        story = this.getStageStory(user.dragonName, user.eggType, user.rarity, user.dragonStage);
+        return ` ¡Tu dragón ha evolucionado a ${user.dragonStage}! 🎉 Ahora tiene ${user.xp}/${requiredXp} XP.`;
       } else {
         // Actualizar el timer incluso si no evoluciona
         user.lastUpdated = now;
@@ -170,7 +171,7 @@ export class TwitchUsersService {
     const nextStage = this.calculateNextStage(user.dragonStage);
     const requiredXp = this.getXpForStage(nextStage);
     return `Tu ${user.rarity} ${user.eggType} ${user.dragonName} está en etapa ${user.dragonStage}. `
-      + `Progreso: ${currentXp}/${requiredXp} XP. ¡Sigue usando !dragon para ganar más!`;
+      + story + `Progreso: ${currentXp}/${requiredXp} XP. ¡Sigue usando !dragon para ganar más!`;
   }
 }
 
