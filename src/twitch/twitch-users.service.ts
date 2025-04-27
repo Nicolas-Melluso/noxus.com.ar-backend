@@ -42,7 +42,7 @@ export class TwitchUsersService {
 
   getRequiredTimeForNextStage(currentStage: string): number {
     const stageTimes = {
-      egg: 0, // Inmediato
+      egg: 10 * 60, // Inmediato
       baby: 30 * 60, // 30 minutos (x3)
       young: 60 * 60, // 1 hora (x3)
       adult: 90 * 60, // 1.5 horas (x3)
@@ -54,7 +54,7 @@ export class TwitchUsersService {
 
   // Generar tipo y rareza del huevo
   generateEggDetails(): { eggType: string; rarity: string } {
-    const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
+    const eggTypes = ['', '', '', '', '', '', '', 'Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
     const rarities = [
       { name: 'Común', chance: 0.75 }, // Aumentamos a 75%
       { name: 'Raro', chance: 0.15 }, // Reducimos a 15%
