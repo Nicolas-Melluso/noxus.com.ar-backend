@@ -40,15 +40,14 @@ export class TwitchUsersService {
     return currentStage;
   }
 
-  // Calcular el tiempo necesario para la siguiente etapa
   getRequiredTimeForNextStage(currentStage: string): number {
     const stageTimes = {
       egg: 0, // Inmediato
-      baby: 10 * 60, // 10 minutos
-      young: 20 * 60, // 20 minutos
-      adult: 30 * 60, // 30 minutos
-      elder: 60 * 60, // 1 hora
-      ancient: 2 * 60 * 60, // 2 horas
+      baby: 30 * 60, // 30 minutos (x3)
+      young: 60 * 60, // 1 hora (x3)
+      adult: 90 * 60, // 1.5 horas (x3)
+      elder: 180 * 60, // 3 horas (x3)
+      ancient: 6 * 60 * 60, // 6 horas (x3)
     };
     return stageTimes[currentStage] || 0;
   }
@@ -57,22 +56,22 @@ export class TwitchUsersService {
   generateEggDetails(): { eggType: string; rarity: string } {
     const eggTypes = ['Mágico', 'Fuego', 'Espectral', 'Agua', 'Tierra'];
     const rarities = [
-      { name: 'Común', chance: 0.6 },
-      { name: 'Raro', chance: 0.25 },
-      { name: 'Muy Raro', chance: 0.1 },
-      { name: 'Épico', chance: 0.04 },
-      { name: 'Mítico', chance: 0.009 },
-      { name: 'Legendario', chance: 0.001 },
+      { name: 'Común', chance: 0.75 }, // Aumentamos a 75%
+      { name: 'Raro', chance: 0.15 }, // Reducimos a 15%
+      { name: 'Muy Raro', chance: 0.06 }, // Reducimos a 6%
+      { name: 'Épico', chance: 0.03 }, // Reducimos a 3%
+      { name: 'Mítico', chance: 0.008 }, // Reducimos a 0.8%
+      { name: 'Legendario', chance: 0.002 }, // Reducimos a 0.2%
     ];
-
+  
     const randomEggType = eggTypes[Math.floor(Math.random() * eggTypes.length)];
-
+  
     let cumulativeChance = 0;
     const randomRarity = rarities.find((rarity) => {
       cumulativeChance += rarity.chance;
       return Math.random() < cumulativeChance;
     });
-
+  
     return {
       eggType: randomEggType,
       rarity: randomRarity?.name || 'Común',
@@ -134,7 +133,7 @@ export class TwitchUsersService {
       const requiredTime = this.getRequiredTimeForNextStage(user.dragonStage);
 
       // Adelantar el reloj por interacción (2 minutos adicionales)
-      const interactionBonus = 2 * 60; // 2 minutos en segundos
+      const interactionBonus = 1 * 60; // 1 minuto en lugar de 2
       const totalElapsedTime = timeDiff + interactionBonus;
 
       if (totalElapsedTime >= requiredTime) {
