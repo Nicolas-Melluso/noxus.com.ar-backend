@@ -132,7 +132,7 @@ export class TwitchUsersService {
 
     // Detener crecimiento a las 5 AM
     const now = new Date();
-    if (now.getHours() >= 5 && now.getHours <= 9) {
+    if (now.getHours() >= 5 && now.getHours() <= 9) {
       user.isGrowing = false;
       await this.twitchUsersRepository.save(user);
       return `Tu dragón está durmiendo. ¡Vuelve mañana! ⏳`;
