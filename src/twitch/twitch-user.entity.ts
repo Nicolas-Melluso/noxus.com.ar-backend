@@ -2,6 +2,8 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
+
+@Entity('twitchUsers')
 export class TwitchUser {
   @PrimaryGeneratedColumn()
   id: number;
