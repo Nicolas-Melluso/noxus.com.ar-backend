@@ -36,8 +36,12 @@ export class TwitchApiService {
     const client = new tmi.Client({ channels: [ 'noxusdev' ], token: await AUTH_TOKEN });
     
     console.log("client", client);
+
+    console.log("Quiero ver que tiene", client.on);
     
     client.on('message', e => {
+      console.log("DEJAME ENTRAAAR");
+      
       const { channel, user, message } = e;
       const icon = user.isBroadcaster ? '📹 ' : user.isMod ? '🛡️ ' : user.isSubscriber ? '⭐ ' : '';
       console.log(`[${channel.login}] ${icon}${user.login}: ${message.text}`);
