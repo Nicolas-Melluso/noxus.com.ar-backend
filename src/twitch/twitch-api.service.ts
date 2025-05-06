@@ -1,7 +1,6 @@
 // src/twitch/twitch-api.service.ts
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -14,11 +13,10 @@ export class TwitchApiService {
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
   ) {
-    this.clientId = this.configService.get<string>('TWITCH_CLIENT_ID');
-    this.clientSecret = this.configService.get<string>('TWITCH_CLIENT_SECRET');
-    this.streamerUsername = this.configService.get<string>('TWITCH_STREAMER_USERNAME');
+    this.clientId = process.env.TWITCH_CLIENT_ID;
+    this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
+    this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
   }
 
   async getAccessToken(): Promise<string> {
