@@ -232,6 +232,8 @@ export class TwitchApiService {
 
   // Maneja mensajes de chat desde EventSub
   handleChatMessage(event: any) {
+    console.log(event);
+    
     const username = event.event.user_name;  // ✅ Usa event.event
     const message = event.event.message;    // ✅ Corrige la ruta del mensaje
     
