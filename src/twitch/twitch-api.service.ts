@@ -159,6 +159,11 @@ export class TwitchApiService {
 
   // Suscribe a eventos de Twitch
   async subscribeToEvent(eventType: string, broadcasterUserId: string) {
+
+    if (!broadcasterUserId || !/^\d+$/.test(broadcasterUserId)) {
+      throw new Error('broadcasterUserId debe ser un número válido');
+    }
+    
     const accessToken = await this.getAppAccessToken();
     
     const payload = {
