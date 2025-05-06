@@ -26,22 +26,36 @@ export class TwitchApiService {
     this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
     this.webhookSecret = process.env.TWITCH_WEBHOOK_SECRET;
     this.refreshToken = process.env.TWITCH_BOT_REFRESH_TOKEN;
+
+    if (!this.webhookSecret) {
+      throw new Error('TWITCH_WEBHOOK_SECRET no está definido en las variables de entorno');
+    }
   }
 
   // Verificación de firma de eventos
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
-    const messageSignature = headers['twitch-eventsub-message-signature'] || '';
+    const messageSignature = headers['twitch-eventsub-message-signature'];
     const messageId = headers['twitch-eventsub-message-id'];
     const timestamp = headers['twitch-eventsub-message-timestamp'];
-    
-    const hmac = crypto.createHmac('sha256', this.webhookSecret);
-    const message = `${messageId}${timestamp}${JSON.stringify(body)}`;
-    const digest = `sha256=${hmac.update(message).digest('hex')}`;
-
-    return crypto.timingSafeEqual(
-      Buffer.from(messageSignature),
-      Buffer.from(digest),
-    );
+  
+    if (!messageSignature || !messageId || !timestamp) {
+      console.warn('Faltan headers requeridos para verificar el evento');
+      return false;
+    }
+  
+    try {
+      const hmac = crypto.createHmac('sha256', this.webhookSecret);
+      const message = `${messageId}${timestamp}${JSON.stringify(body)}`;
+      const digest = `sha256=${hmac.update(message).digest('hex')}`;
+      
+      return crypto.timingSafeEqual(
+        Buffer.from(messageSignature),
+        Buffer.from(digest),
+      );
+    } catch (error) {
+      console.error('Error verificando firma:', error.message);
+      return false;
+    }
   }
 
   // Obtiene token de aplicación (para EventSub)
