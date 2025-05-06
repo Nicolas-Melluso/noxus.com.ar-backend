@@ -4,17 +4,32 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TwitchUser } from './twitch-users.entity';
 import { Dragon } from './dragon.entity';
+import { TwitchApiService } from './twitch-api.service';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 
+enum XpSource {
+  CHAT = 'chat',
+  RAID = 'raid',
+  SUB = 'sub',
+  PASSIVE = 'passive',
+}
 @Injectable()
 export class TwitchUsersService {
+  private clientId: string;
+  
   private readonly xpStages = {
     egg: 0,
     baby: 1000,
-    young: 2000,
-    mid: 5000,
+    young: 3000,
+    mid: 6000,
     adult: 10000,
-    elder: 20000,
-    ancient: 50000,
+    elder: 15000,
+    ancient: 25000,
+    mythical: 40000,
+    celestial: 60000,
+    legendary: 100000,
   };
 
   private readonly stageTranslations = {
@@ -27,12 +42,32 @@ export class TwitchUsersService {
     ancient: 'Ancestral',
   };
 
+  // Asegúrate de importar TwitchApiService
   constructor(
     @InjectRepository(TwitchUser)
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
     private readonly twitchUsersRepository: Repository<TwitchUser>,
-  ) {}
+    private readonly twitchApiService: TwitchApiService,
+  ) {
+    this.clientId = this.configService.get<string>('TWITCH_CLIENT_ID');
+  }
 
   async updateDragon(username: string): Promise<string> {
+    const isLive = await this.twitchApiService.isStreamerLive();
+
+    console.log("TW", isLive);
+    
+    return 'Haciendo pruebas';
+    try {
+      const isLive = await this.twitchApiService.isStreamerLive();
+      if (!isLive) {
+        return 'No se otorgó XP porque el stream está offline.';
+      }
+    } catch (error) {
+      return 'Error verificando el estado del stream. Inténtalo más tarde.';
+    }
+
     let user = await this.twitchUsersRepository.findOneBy({ username });
 
     if (!user) {
@@ -55,17 +90,47 @@ export class TwitchUsersService {
     user.lastInteractionTime = now;
   }
 
-  private async checkEvolution(user: TwitchUser): Promise<string | null> {
-    const nextStage = this.getNextStage(user.dragonStage);
-    const requiredXp = this.xpStages[nextStage];
+  async addXp(username: string, amount: number, source: XpSource): Promise<void> {
+    const user = await this.twitchUsersRepository.findOneBy({ username });
+    if (!user) return;
+  
+    user.xp += amount;
+    await this.twitchUsersRepository.save(user);
+  
+    await this.checkEvolution(user);
+  }
 
-    if (user.xp >= requiredXp) {
-      user.dragonStage = nextStage;
-      user.xp = 0;
-      user.stageStartTime = new Date();
-      const message = this.getEvolutionMessage(user, nextStage);
-      await this.twitchUsersRepository.save(user);
-      return message;
+  async isUserFollowing(username: string): Promise<boolean> {
+    const accessToken = await this.twitchApiService.getAccessToken();
+    
+    const response = await firstValueFrom(
+      this.httpService.get(`https://api.twitch.tv/helix/users/follows?from_id={userId}&to_id={streamerId}`, {
+        headers: {
+          'Client-ID': this.clientId,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
+    
+    return response.data.total > 0;
+  }
+
+  private async checkEvolution(user: TwitchUser): Promise<string | null> {
+    const stages = Object.keys(this.xpStages);
+    const currentIndex = stages.indexOf(user.dragonStage);
+    
+    // Busca la siguiente etapa donde el XP actual es suficiente
+    for (let i = currentIndex + 1; i < stages.length; i++) {
+      const nextStage = stages[i];
+      const requiredXp = this.xpStages[nextStage];
+      
+      if (user.xp >= requiredXp) {
+        user.dragonStage = nextStage;
+        user.stageStartTime = new Date();
+        const message = this.getEvolutionMessage(user, nextStage);
+        await this.twitchUsersRepository.save(user);
+        return message;
+      }
     }
     return null;
   }
@@ -97,6 +162,12 @@ export class TwitchUsersService {
   }
 
   private async createNewDragon(username: string): Promise<string> {
+
+    const isFollowing = await this.isUserFollowing(username);
+    if (!isFollowing) {
+      return 'Solo los seguidores pueden recibir un huevo de dragón.';
+    }
+    
     const { eggType, rarity } = Dragon.generateEggDetails();
     const dragonName = Dragon.generateName();
     const traits = Dragon.generateTraits();
