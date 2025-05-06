@@ -87,7 +87,8 @@ export class TwitchUsersService {
     try {
       const isLive = await this.twitchApiService.isStreamerLive(); // ✅ Ahora está disponible
       console.log("TW", isLive);
-      return `Estado del stream: ${isLive ? 'En vivo 🎥' : 'Offline 🛑'}`;
+      //return `Estado del stream: ${isLive ? 'En vivo 🎥' : 'Offline 🛑'}`;
+      return "Los Dragones están hibernando, pronto habrá más noticias de ellos!"
     } catch (error) {
       console.error('Error al verificar stream:', error.message);
       return 'Error al verificar el estado del stream';

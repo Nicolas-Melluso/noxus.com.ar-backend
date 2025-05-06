@@ -238,7 +238,7 @@ export class TwitchApiService {
     const username = event.chatter_user_name;  // ✅ Usa event.event
     const message = event.message.text;    // ✅ Corrige la ruta del mensaje
 
-    if (message.toLowerCase() === '!dragon2') {
+    if (message.toLowerCase() === '!dragon') {
       this.sendChatMessage(event.broadcaster_user_id, await this.tw.updateDragon(username));
     }
   }
