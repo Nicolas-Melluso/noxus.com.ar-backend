@@ -10,10 +10,6 @@ import { TwitchApiService } from './twitch-api.service';
 
 @Module({
   imports: [
-    // Módulos necesarios
-    HttpModule, // ✅ Importa el módulo para usar HttpService
-    ConfigModule, // ✅ Importa el módulo para usar ConfigService
-    // Entidad
     TypeOrmModule.forFeature([TwitchUser]),
   ],
   providers: [

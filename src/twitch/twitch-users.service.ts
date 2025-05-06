@@ -4,17 +4,18 @@ import { TwitchApiService } from './twitch-api.service';
 
 @Injectable()
 export class TwitchUsersService {
-  twitchApiService: TwitchApiService;
-  constructor() {
-  }
+  constructor(private readonly twitchApiService: TwitchApiService) {} // ✅ Inyección correcta
 
   async updateDragon(username: string) {
     console.log("user", username);
     
-    const isLive = await this.twitchApiService.isStreamerLive();
-
-    console.log("TW", isLive);
-    
-    return "Testing Command pls wait";
+    try {
+      const isLive = await this.twitchApiService.isStreamerLive(); // ✅ Ahora está disponible
+      console.log("TW", isLive);
+      return `Estado del stream: ${isLive ? 'En vivo 🎥' : 'Offline 🛑'}`;
+    } catch (error) {
+      console.error('Error al verificar stream:', error.message);
+      return 'Error al verificar el estado del stream';
+    }
   }
 }
