@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class TwitchApiService {
@@ -10,15 +11,29 @@ export class TwitchApiService {
   private streamerUsername: string;
   private accessToken: string | null = null;
   private tokenExpiry = 0;
-
+  private readonly webhookSecret: string;
+  
   constructor(
     private readonly httpService: HttpService,
   ) {
     this.clientId = process.env.TWITCH_CLIENT_ID;
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
     this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
+    this.webhookSecret = process.env.TWITCH_WEBHOOK_SECRET;
+  }
 
-    console.log('✅ CLIENT_ID:', this.clientId);
+  async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
+    const messageSignature = headers['twitch-eventsub-message-signature'] || '';
+    const messageId = headers['twitch-eventsub-message-id'];
+    const timestamp = headers['twitch-eventsub-message-timestamp'];
+    const hmac = crypto.createHmac('sha256', this.webhookSecret);
+    const message = `${messageId}${timestamp}${JSON.stringify(body)}`;
+    const digest = `sha256=${hmac.update(message).digest('hex')}`;
+
+    return crypto.timingSafeEqual(
+      Buffer.from(messageSignature),
+      Buffer.from(digest),
+    );
   }
 
   async getAccessToken(): Promise<string> {
