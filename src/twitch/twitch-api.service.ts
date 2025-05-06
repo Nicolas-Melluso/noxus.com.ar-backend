@@ -168,7 +168,7 @@ export class TwitchApiService {
     
     console.log(2, "Despues del if de broadcasterUserId");
 
-    const accessToken = await this.getUserAccessToken();
+    const accessToken = await this.getAppAccessToken();
     
     console.log(3, accessToken);
 
