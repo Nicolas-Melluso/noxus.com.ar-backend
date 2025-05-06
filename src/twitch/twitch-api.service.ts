@@ -234,8 +234,8 @@ export class TwitchApiService {
   handleChatMessage(event: any) {
     console.log(event);
     
-    const username = event.event.user_name;  // ✅ Usa event.event
-    const message = event.event.message;    // ✅ Corrige la ruta del mensaje
+    const username = event.chatter_user_name;  // ✅ Usa event.event
+    const message = event.message.text;    // ✅ Corrige la ruta del mensaje
     
     console.log(`Nuevo mensaje de ${username}: ${message}`);
     
