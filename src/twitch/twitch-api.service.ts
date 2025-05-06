@@ -17,6 +17,8 @@ export class TwitchApiService {
     this.clientId = process.env.TWITCH_CLIENT_ID;
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
     this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
+
+    console.log('✅ CLIENT_ID:', this.clientId);
   }
 
   async getAccessToken(): Promise<string> {
