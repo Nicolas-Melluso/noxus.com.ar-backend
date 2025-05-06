@@ -232,11 +232,13 @@ export class TwitchApiService {
 
   // Maneja mensajes de chat desde EventSub
   handleChatMessage(event: any) {
-    console.log(`Nuevo mensaje de ${event.user_name}: ${event.message}`);
+    const username = event.event.user_name;  // ✅ Usa event.event
+    const message = event.event.message;    // ✅ Corrige la ruta del mensaje
     
-    // Ejemplo de comando
-    if (event.message.toLowerCase() === '!hello') {
-      this.sendChatMessage(event.broadcaster_user_id, `@${event.user_name}, heya!`);
+    console.log(`Nuevo mensaje de ${username}: ${message}`);
+    
+    if (message.toLowerCase() === '!hello') {
+      this.sendChatMessage(event.event.broadcaster_user_id, `@${username}, heya!`);
     }
   }
 
