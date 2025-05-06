@@ -158,11 +158,10 @@ export class TwitchController {
       }
 
       // 4. Enviar mensaje de prueba al chat
-      const a = await this.twitchApiService.sendChatMessage(
+      await this.twitchApiService.sendChatMessage(
         process.env.BOT_USER_ID,
         "✅ Bot configurado exitosamente! ¡Estoy listo para responder en el chat!"
       );
-      console.log(5, a);
 
       return res.status(HttpStatus.OK).json({
         status: 'success',
