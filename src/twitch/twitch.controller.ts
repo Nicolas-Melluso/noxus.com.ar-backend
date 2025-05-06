@@ -35,6 +35,8 @@ export class TwitchController {
   ) {
     // Twitch envía el challenge durante la verificación del endpoint
     if (messageType === 'webhook_callback_verification') {
+      console.log("Challenge?");
+      
       return body.challenge;
     }
     // Aquí puedes implementar la lógica para cada tipo de evento recibido.

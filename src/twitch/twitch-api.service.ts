@@ -29,6 +29,9 @@ export class TwitchApiService {
   }
 
   async init () {
+
+    console.log("Antes del auth");
+    
     const AUTH_TOKEN = this.getAccessToken();
     const client = new tmi.Client({ channels: [ 'noxusdev' ], token: await AUTH_TOKEN });
     
@@ -38,7 +41,7 @@ export class TwitchApiService {
       console.log(`[${channel.login}] ${icon}${user.login}: ${message.text}`);
     });
   }
-  
+
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
     const messageSignature = headers['twitch-eventsub-message-signature'] || '';
     const messageId = headers['twitch-eventsub-message-id'];
@@ -76,8 +79,6 @@ export class TwitchApiService {
           },
         ),
       );
-
-      console.log(tokenResponse);
   
       this.accessToken = tokenResponse.data.access_token;
       this.tokenExpiry = Date.now() + tokenResponse.data.expires_in * 1000;
