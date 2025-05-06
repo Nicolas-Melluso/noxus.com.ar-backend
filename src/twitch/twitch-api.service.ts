@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
+import { TwitchUsersService } from './twitch-users.service';
 
 @Injectable()
 export class TwitchApiService {
@@ -20,6 +21,7 @@ export class TwitchApiService {
 
   constructor(
     private readonly httpService: HttpService,
+    private tw: TwitchUsersService
   ) {
     this.clientId = process.env.TWITCH_CLIENT_ID;
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
@@ -231,12 +233,12 @@ export class TwitchApiService {
   }
 
   // Maneja mensajes de chat desde EventSub
-  handleChatMessage(event: any) {
+  async handleChatMessage(event: any) {
     const username = event.chatter_user_name;  // ✅ Usa event.event
     const message = event.message.text;    // ✅ Corrige la ruta del mensaje
 
-    if (message.toLowerCase() === '!hello') {
-      this.sendChatMessage(event.broadcaster_user_id, `@${username}, heya!`);
+    if (message.toLowerCase() === '!dragon') {
+      this.sendChatMessage(event.broadcaster_user_id, await this.tw.updateDragon(username));
     }
   }
 
