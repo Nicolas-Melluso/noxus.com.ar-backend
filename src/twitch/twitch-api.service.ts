@@ -1,5 +1,5 @@
 // src/twitch/twitch-api.service.ts
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
@@ -21,6 +21,7 @@ export class TwitchApiService {
 
   constructor(
     private readonly httpService: HttpService,
+    @Inject(forwardRef(() => TwitchUsersService))
     private tw: TwitchUsersService
   ) {
     this.clientId = process.env.TWITCH_CLIENT_ID;

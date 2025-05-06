@@ -18,7 +18,7 @@ import { TwitchApiService } from './twitch-api.service';
   ],
   providers: [
     TwitchUsersService,
-    TwitchApiService, // ✅ Ya puedes usar HttpService y ConfigService aquí
+    TwitchApiService,
   ],
   controllers: [TwitchController],
 })

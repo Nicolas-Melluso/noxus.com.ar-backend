@@ -1,5 +1,5 @@
 // src/twitch/twitch-users.service.ts
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TwitchApiService } from './twitch-api.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TwitchUser } from './twitch-users.entity';
@@ -10,7 +10,8 @@ export class TwitchUsersService {
   constructor(
     @InjectRepository(TwitchUser)
     private readonly usersRepository: Repository<TwitchUser>,
-    
+  
+    @Inject(forwardRef(() => TwitchApiService))
     private readonly twitchApiService: TwitchApiService
   ) {} // ✅ Inyección correcta
 
