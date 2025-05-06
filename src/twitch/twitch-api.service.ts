@@ -48,13 +48,12 @@ export class TwitchApiService {
   }
 
   async isStreamerLive(): Promise<boolean> {
-    console.log("ACCESS function");
     const accessToken = await this.getAccessToken();
-  
+    console.log("ACCESS", accessToken);
     
     const response = await firstValueFrom(
       this.httpService.get<{ data: { user_login: string }[] }>(
-        'https://api.twitch.tv/helix/streams',
+        'https://api.twitch.tv/noxusdev/streams',
         {
           headers: {
             'Client-ID': this.clientId,
