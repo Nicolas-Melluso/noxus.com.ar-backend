@@ -48,23 +48,10 @@ export class TwitchApiService {
       ]
     });
 
-  bot.onMessage(({ broadcasterName, userName, text }) => {
-    console.log(`[${broadcasterName}] ${userName}: ${text}`);
-    bot.say(userName, "say something");
-  });
-
-  // Eventos de subscripción
-  bot.onSub(({ broadcasterName, userName }) => {
-    bot.say(broadcasterName, `Thanks to @${userName} for subscribing to the channel!`);
-  });
-  
-  bot.onResub(({ broadcasterName, userName, months }) => {
-    bot.say(broadcasterName, `Thanks to @${userName} for subscribing to the channel for a total of ${months} months!`);
-  });
-  
-  bot.onSubGift(({ broadcasterName, gifterName, userName }) => {
-    bot.say(broadcasterName, `Thanks to @${gifterName} for gifting a subscription to @${userName}!`);
-  });
+    bot.onMessage(({ broadcasterName, userName, text }) => {
+      console.log(`[${broadcasterName}] ${userName}: ${text}`);
+      bot.say(userName, "say something");
+    });
 
   }
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
