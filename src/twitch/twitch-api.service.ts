@@ -55,7 +55,7 @@ export class TwitchApiService {
     
     const response = await firstValueFrom(
       this.httpService.get<{ data: { user_login: string }[] }>(
-        'https://api.twitch.tv/noxusdev/streams',
+        'https://api.twitch.tv/helix/streams',
         {
           headers: {
             'Client-ID': this.clientId,
