@@ -42,6 +42,8 @@ export class TwitchApiService {
       ),
     );
 
+    console.log("tokenResponse", tokenResponse);
+
     this.accessToken = tokenResponse.data.access_token;
     this.tokenExpiry = Date.now() + tokenResponse.data.expires_in * 1000;
     return this.accessToken;
