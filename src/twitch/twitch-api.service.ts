@@ -21,15 +21,14 @@ export class TwitchApiService {
     this.streamerUsername = this.configService.get<string>('TWITCH_STREAMER_USERNAME');
   }
 
-  // src/twitch/twitch-api.service.ts
-
-  async getAccessToken(): Promise<string> {
+  private async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken;
     }
 
+    // ✅ Usa this.httpService.post() en lugar de axiosRef.post()
     const tokenResponse = await firstValueFrom(
-      this.httpService.post<{ access_token: string; expires_in: number }>(
+      this.httpService.post(
         'https://id.twitch.tv/oauth2/token',
         null,
         {
@@ -42,8 +41,6 @@ export class TwitchApiService {
       ),
     );
 
-    console.log("tokenResponse", tokenResponse);
-
     this.accessToken = tokenResponse.data.access_token;
     this.tokenExpiry = Date.now() + tokenResponse.data.expires_in * 1000;
     return this.accessToken;
@@ -51,23 +48,20 @@ export class TwitchApiService {
 
   async isStreamerLive(): Promise<boolean> {
     const accessToken = await this.getAccessToken();
-    console.log("ACCESS", accessToken);
-    
+
+    // ✅ Usa this.httpService.get() en lugar de axiosRef.get()
     const response = await firstValueFrom(
-      this.httpService.get<{ data: { user_login: string }[] }>(
-        'https://api.twitch.tv/helix/streams',
-        {
-          headers: {
-            'Client-ID': this.clientId,
-            Authorization: `Bearer ${accessToken}`,
-          },
-          params: {
-            user_login: this.streamerUsername,
-          },
+      this.httpService.get('https://api.twitch.tv/helix/streams', {
+        headers: {
+          'Client-ID': this.clientId,
+          Authorization: `Bearer ${accessToken}`,
         },
-      ),
+        params: {
+          user_login: this.streamerUsername,
+        },
+      }),
     );
-  
+
     return response.data.data.length > 0;
   }
 }
