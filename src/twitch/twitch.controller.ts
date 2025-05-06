@@ -143,10 +143,14 @@ export class TwitchController {
     try {
       // 1. Obtener tokens necesarios
       const appToken = await this.twitchApiService.getAppAccessToken();
+      console.log(1, appToken);
+      
       const userToken = await this.twitchApiService.getUserAccessToken();
+      console.log(2, userToken);
       
       // 2. Verificar si ya existe suscripción
       const existingSubs = await this.checkExistingSubscription(appToken);
+      console.log(3, existingSubs);
       
       let subscriptionResult = null;
       if (!existingSubs) {
@@ -155,13 +159,15 @@ export class TwitchController {
           'channel.chat.message', 
           process.env.BOT_USER_ID
         );
+      console.log(4, subscriptionResult);
       }
 
       // 4. Enviar mensaje de prueba al chat
-      await this.twitchApiService.sendChatMessage(
+      const a = await this.twitchApiService.sendChatMessage(
         process.env.BOT_USER_ID,
         "✅ Bot configurado exitosamente! ¡Estoy listo para responder en el chat!"
       );
+      console.log(5, a);
 
       return res.status(HttpStatus.OK).json({
         status: 'success',
