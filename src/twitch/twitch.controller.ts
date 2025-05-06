@@ -1,5 +1,5 @@
 // src/twitch/twitch.controller.ts
-import { Controller, Post, Body, Res, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Res, Headers, Get, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { TwitchUsersService } from './twitch-users.service';
 import { TwitchApiService } from './twitch-api.service';
@@ -25,39 +25,32 @@ export class TwitchController {
     res.send(responseMessage);
   }
 
+  /**
+   * Endpoint para recibir las notificaciones de Twitch EventSub.
+   * - Si el mensaje es de verificación (challenge), se responde con el challenge recibido.
+   * - De lo contrario, se procesa la notificación (e.g., evento de 'channel.follow').
+   */
   @Post('events')
-  async handleTwitchEvent(
-    @Headers() headers: any,
-    @Body() event: any,
-    @Res() res: Response,
+  async handleEventSub(
+    @Body() body: any,
+    @Headers('twitch-eventsub-message-type') messageType: string,
   ) {
-    // 1. Verificar firma del evento (importante para seguridad)
-    const isValid = await this.twitchApiService.verifyTwitchEvent(headers, event);
-    if (!isValid) {
-      return res.status(403).send('Forbidden');
-    }
-
-    // 2. Manejar los tipos de mensaje: verificación, notificación y revocación
-    const messageType = headers['twitch-eventsub-message-type']?.toLowerCase();
-
+    // Twitch envía el challenge durante la verificación del endpoint
     if (messageType === 'webhook_callback_verification') {
-      // ✅ Confirmación de webhook (primera vez)
-      return res.status(200).set('Content-Type', 'text/plain').send(event.challenge);
+      return body.challenge;
     }
+    // Aquí puedes implementar la lógica para cada tipo de evento recibido.
+    console.log('Notificación de EventSub recibida:', body);
+    return { status: 'ok' };
+  }
 
-    if (messageType === 'notification') {
-      // 🧬 Procesar evento (ej: mensaje en el chat)
-      await this.twitchUsersService.handleTwitchChatMessage(event.event.user_name, event.event.message);
-      return res.status(204).send(); // Respuesta rápida requerida por Twitch
-    }
-
-    if (messageType === 'revocation') {
-      // ⚠️ La suscripción fue revocada
-      console.log('🚨 Suscripción revocada:', event.subscription.status);
-      return res.status(204).send();
-    }
-
-    // ❌ Tipo de evento desconocido
-    return res.status(400).send('Unknown message type');
+  /**
+   * Endpoint para suscribir un evento, por ejemplo, 'channel.follow'
+   * Puedes llamarlo manualmente o integrarlo en tu lógica según lo requieras.
+   */
+  @Get('subscribe')
+  async subscribeToFollowEvent(@Query('broadcasterUserId') broadcasterUserId: string) {
+    const result = await this.twitchApiService.subscribeToEvent('channel.follow', broadcasterUserId);
+    return result;
   }
 }
