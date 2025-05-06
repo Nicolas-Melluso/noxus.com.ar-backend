@@ -29,7 +29,6 @@ export class TwitchApiService {
 
   async init () {
     console.log("LOL ENTREEE");
-    
   }
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
     const messageSignature = headers['twitch-eventsub-message-signature'] || '';

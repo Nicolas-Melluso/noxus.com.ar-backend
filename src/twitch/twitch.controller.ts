@@ -13,8 +13,6 @@ export class TwitchController {
 
   @Post('dragon')
   async handleDragonCommand(@Body() command: any, @Res() res: Response) {
-    console.log("OWN3D", command);
-    
     const username = command?.event?.user?.username || 'UsuarioDesconocido';
 
     // Obtener o actualizar el dragón del usuario
