@@ -4,8 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import axios from 'axios';
-import { StaticAuthProvider } from '@twurple/auth';
-import { Bot, createBotCommand } from '@twurple/easy-bot';
+import tmi from '@tmi.js/chat';
 
 @Injectable()
 export class TwitchApiService {
@@ -30,30 +29,16 @@ export class TwitchApiService {
   }
 
   async init () {
-    const clientId = 'y7nji3wysooktkgklle0fucrmxqsy8';
-    const accessToken = 'ikcclml0be7cdwsa7o9aqqdwr0e5c3';
-    const authProvider = new StaticAuthProvider(clientId, accessToken);
-
-    const bot = new Bot({
-      authProvider,
-      channels: ['satisfiedpear'],
-      commands: [
-        createBotCommand('dice', (params, { reply }) => {
-          const diceRoll = Math.floor(Math.random() * 6) + 1;
-          reply(`You rolled a ${diceRoll}`);
-        }),
-        createBotCommand('slap', (params, { userName, say }) => {
-          say(`${userName} slaps ${params.join(' ')} around a bit with a large trout`);
-        })
-      ]
+    const AUTH_TOKEN = this.getAccessToken();
+    const client = new tmi.Client({ channels: [ 'noxusdev' ], token: await AUTH_TOKEN });
+    
+    client.on('message', e => {
+      const { channel, user, message } = e;
+      const icon = user.isBroadcaster ? '📹 ' : user.isMod ? '🛡️ ' : user.isSubscriber ? '⭐ ' : '';
+      console.log(`[${channel.login}] ${icon}${user.login}: ${message.text}`);
     });
-
-    bot.onMessage(({ broadcasterName, userName, text }) => {
-      console.log(`[${broadcasterName}] ${userName}: ${text}`);
-      bot.say(userName, "say something");
-    });
-
   }
+  
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
     const messageSignature = headers['twitch-eventsub-message-signature'] || '';
     const messageId = headers['twitch-eventsub-message-id'];
