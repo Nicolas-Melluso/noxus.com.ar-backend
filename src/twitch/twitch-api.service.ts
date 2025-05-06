@@ -175,7 +175,10 @@ export class TwitchApiService {
     const payload = {
       type: eventType,
       version: '1',
-      condition: { user_id: broadcasterUserId },
+      condition: { 
+        broadcaster_user_id: broadcasterUserId,
+        user_id: broadcasterUserId
+       },
       transport: {
         method: 'webhook',
         callback: this.callbackUrl,
