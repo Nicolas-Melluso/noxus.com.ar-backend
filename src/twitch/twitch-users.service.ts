@@ -78,15 +78,12 @@ export class TwitchUsersService {
   }
 
   async updateDragon(username: string) {
-    console.log("user", username);
-    
     //Comprobar si tiene dragon
     // SI NO TIENE crearle uno
     // SI YA TIENE mostrarle el dragón y su XP
 
     try {
       const isLive = await this.twitchApiService.isStreamerLive(); // ✅ Ahora está disponible
-      console.log("TW", isLive);
       //return `Estado del stream: ${isLive ? 'En vivo 🎥' : 'Offline 🛑'}`;
       return "Los Dragones están hibernando, pronto habrá más noticias de ellos!"
     } catch (error) {
