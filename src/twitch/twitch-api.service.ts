@@ -21,33 +21,56 @@ export class TwitchApiService {
     this.streamerUsername = this.configService.get<string>('TWITCH_STREAMER_USERNAME');
   }
 
-  private async getAccessToken(): Promise<string> {
+  async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken;
     }
 
-    // ✅ Usa this.httpService.post() en lugar de axiosRef.post()
-    const tokenResponse = await firstValueFrom(
-      this.httpService.post(
-        'https://id.twitch.tv/oauth2/token',
-        null,
-        {
-          params: {
-            client_id: this.clientId,
-            client_secret: this.clientSecret,
-            grant_type: 'client_credentials',
-          },
+    try {
+      console.log('🌐 Enviando a Twitch:', {
+        url: 'https://id.twitch.tv/oauth2/token',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-      ),
-    );
+        body: {
+          client_id: this.clientId,
+          client_secret: '*********', // Oculta el secreto
+          grant_type: 'client_credentials',
+        },
+      });
 
-    this.accessToken = tokenResponse.data.access_token;
-    this.tokenExpiry = Date.now() + tokenResponse.data.expires_in * 1000;
-    return this.accessToken;
+      const params = new URLSearchParams();
+      params.append('client_id', this.clientId);
+      params.append('client_secret', this.clientSecret);
+      params.append('grant_type', 'client_credentials');
+  
+      const tokenResponse = await firstValueFrom(
+        this.httpService.post(
+          'https://id.twitch.tv/oauth2/token',
+          params.toString(), // ✅ Codifica el cuerpo como URL
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded', // ✅ Asegura el header
+            },
+          },
+        ),
+      );
+
+      console.log(tokenResponse);
+  
+      this.accessToken = tokenResponse.data.access_token;
+      this.tokenExpiry = Date.now() + tokenResponse.data.expires_in * 1000;
+      return this.accessToken;
+    } catch (error) {
+      console.error('❌ Error al obtener token:', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   async isStreamerLive(): Promise<boolean> {
     const accessToken = await this.getAccessToken();
+
+    console.log("AC", accessToken);
 
     // ✅ Usa this.httpService.get() en lugar de axiosRef.get()
     const response = await firstValueFrom(
