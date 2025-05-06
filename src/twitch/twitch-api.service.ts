@@ -160,12 +160,18 @@ export class TwitchApiService {
   // Suscribe a eventos de Twitch
   async subscribeToEvent(eventType: string, broadcasterUserId: string) {
 
+    console.log(1, "Antes de todo");
+    
     if (!broadcasterUserId || !/^\d+$/.test(broadcasterUserId)) {
       throw new Error('broadcasterUserId debe ser un número válido');
     }
     
+    console.log(2, "Despues del if de broadcasterUserId");
+
     const accessToken = await this.getAppAccessToken();
     
+    console.log(3, accessToken);
+
     const payload = {
       type: eventType,
       version: '1',
@@ -176,6 +182,8 @@ export class TwitchApiService {
         secret: this.webhookSecret,
       },
     };
+
+    console.log(4, payload);
 
     const response = await firstValueFrom(
       this.httpService.post(
@@ -190,6 +198,8 @@ export class TwitchApiService {
         }
       )
     );
+
+    console.log(5, response);
     
     return response.data;
   }
