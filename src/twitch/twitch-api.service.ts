@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
+import axios from 'axios';
 
 @Injectable()
 export class TwitchApiService {
@@ -12,6 +13,8 @@ export class TwitchApiService {
   private accessToken: string | null = null;
   private tokenExpiry = 0;
   private readonly webhookSecret: string;
+  private callbackUrl: string; // URL de tu endpoint, por ejemplo: https://miapp.com/twitch/eventsub
+  
   
   constructor(
     private readonly httpService: HttpService,
@@ -20,6 +23,8 @@ export class TwitchApiService {
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
     this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
     this.webhookSecret = process.env.TWITCH_WEBHOOK_SECRET;
+    this.callbackUrl = "https://localhost:3000/twitch/events";
+
   }
 
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
@@ -42,17 +47,6 @@ export class TwitchApiService {
     }
 
     try {
-      console.log('🌐 Enviando a Twitch:', {
-        url: 'https://id.twitch.tv/oauth2/token',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          client_id: this.clientId,
-          client_secret: '*********', // Oculta el secreto
-          grant_type: 'client_credentials',
-        },
-      });
 
       const params = new URLSearchParams();
       params.append('client_id', this.clientId);
@@ -85,8 +79,6 @@ export class TwitchApiService {
   async isStreamerLive(): Promise<boolean> {
     const accessToken = await this.getAccessToken();
 
-    console.log("AC", accessToken);
-
     // ✅ Usa this.httpService.get() en lugar de axiosRef.get()
     const response = await firstValueFrom(
       this.httpService.get('https://api.twitch.tv/helix/streams', {
@@ -101,5 +93,37 @@ export class TwitchApiService {
     );
 
     return response.data.data.length > 0;
+  }
+
+   /**
+   * Realiza una solicitud a Twitch para suscribir el endpoint a un evento específico.
+   * @param eventType Tipo de evento en Twitch (por ejemplo, "channel.follow")
+   * @param broadcasterUserId ID del canal sobre el que queremos recibir eventos
+   */
+   async subscribeToEvent(eventType: string, broadcasterUserId: string) {
+    const accessToken = await this.getAccessToken();
+
+    // Payload de la suscripción según la documentación de Twitch EventSub
+    const payload = {
+      type: eventType,
+      version: '1',
+      condition: {
+        broadcaster_user_id: broadcasterUserId,
+      },
+      transport: {
+        method: 'webhook',
+        callback: this.callbackUrl,
+        secret: this.webhookSecret,
+      },
+    };
+
+    const response = await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', payload, {
+      headers: {
+        'Client-ID': this.clientId,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
   }
 }
