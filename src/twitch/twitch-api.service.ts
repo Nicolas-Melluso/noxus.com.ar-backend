@@ -4,6 +4,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import axios from 'axios';
+import { StaticAuthProvider } from '@twurple/auth';
+import { Bot, createBotCommand } from '@twurple/easy-bot';
 
 @Injectable()
 export class TwitchApiService {
@@ -23,12 +25,47 @@ export class TwitchApiService {
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
     this.streamerUsername = process.env.TWITCH_STREAMER_USERNAME;
     this.webhookSecret = process.env.TWITCH_WEBHOOK_SECRET;
-    this.callbackUrl = "https://localhost:3000/twitch/events";
+    this.callbackUrl = "https://api.noxus.com.ar/twitch/events";
     this.init();
   }
 
   async init () {
-    console.log("LOL ENTREEE");
+    const clientId = 'y7nji3wysooktkgklle0fucrmxqsy8';
+    const accessToken = 'ikcclml0be7cdwsa7o9aqqdwr0e5c3';
+    const authProvider = new StaticAuthProvider(clientId, accessToken);
+
+    const bot = new Bot({
+      authProvider,
+      channels: ['satisfiedpear'],
+      commands: [
+        createBotCommand('dice', (params, { reply }) => {
+          const diceRoll = Math.floor(Math.random() * 6) + 1;
+          reply(`You rolled a ${diceRoll}`);
+        }),
+        createBotCommand('slap', (params, { userName, say }) => {
+          say(`${userName} slaps ${params.join(' ')} around a bit with a large trout`);
+        })
+      ]
+    });
+
+  bot.onMessage(({ broadcasterName, userName, text }) => {
+    console.log(`[${broadcasterName}] ${userName}: ${text}`);
+    bot.say(userName, "say something");
+  });
+
+  // Eventos de subscripción
+  bot.onSub(({ broadcasterName, userName }) => {
+    bot.say(broadcasterName, `Thanks to @${userName} for subscribing to the channel!`);
+  });
+  
+  bot.onResub(({ broadcasterName, userName, months }) => {
+    bot.say(broadcasterName, `Thanks to @${userName} for subscribing to the channel for a total of ${months} months!`);
+  });
+  
+  bot.onSubGift(({ broadcasterName, gifterName, userName }) => {
+    bot.say(broadcasterName, `Thanks to @${gifterName} for gifting a subscription to @${userName}!`);
+  });
+
   }
   async verifyTwitchEvent(headers: any, body: any): Promise<boolean> {
     const messageSignature = headers['twitch-eventsub-message-signature'] || '';
