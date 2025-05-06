@@ -236,7 +236,7 @@ export class TwitchApiService {
     const message = event.message.text;    // ✅ Corrige la ruta del mensaje
 
     if (message.toLowerCase() === '!hello') {
-      this.sendChatMessage(event.event.broadcaster_user_id, `@${username}, heya!`);
+      this.sendChatMessage(event.broadcaster_user_id, `@${username}, heya!`);
     }
   }
 
