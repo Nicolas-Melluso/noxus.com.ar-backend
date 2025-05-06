@@ -28,7 +28,6 @@ export class TwitchApiService {
       return this.accessToken;
     }
 
-    // ✅ Usa this.httpService.post() en lugar de axiosRef
     const tokenResponse = await firstValueFrom(
       this.httpService.post<{ access_token: string; expires_in: number }>(
         'https://id.twitch.tv/oauth2/token',
@@ -49,9 +48,9 @@ export class TwitchApiService {
   }
 
   async isStreamerLive(): Promise<boolean> {
+    console.log("ACCESS function");
     const accessToken = await this.getAccessToken();
   
-    console.log("ACCESS", accessToken);
     
     const response = await firstValueFrom(
       this.httpService.get<{ data: { user_login: string }[] }>(
