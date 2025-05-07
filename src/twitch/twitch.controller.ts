@@ -9,24 +9,7 @@ import { firstValueFrom } from 'rxjs';
 export class TwitchController {
   constructor(
     private readonly twitchApiService: TwitchApiService,
-    private readonly twitchUsersService: TwitchUsersService
   ) {}
-
-  /**
-   * Endpoint para comandos personalizados (ej: dragón)
-   */
-  @Post('dragon')
-  async handleDragonCommand(@Body() command: any, @Res() res: Response) {
-    try {
-      const username = command?.event?.user?.username || 'UsuarioDesconocido';
-      const responseMessage = await this.twitchUsersService.updateDragon(username);
-      
-      res.status(HttpStatus.OK).type('text/plain').send(responseMessage);
-    } catch (error) {
-      console.error('Error en comando de dragón:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error procesando comando');
-    }
-  }
 
   /**
    * Webhook para recibir eventos de Twitch EventSub

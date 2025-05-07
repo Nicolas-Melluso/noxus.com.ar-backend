@@ -236,10 +236,10 @@ export class TwitchApiService {
   // Maneja mensajes de chat desde EventSub
   async handleChatMessage(event: any) {
     const username = event.chatter_user_name;  // ✅ Usa event.event
-    const message = event.message.text;    // ✅ Corrige la ruta del mensaje
+    const message = event.message.text;   // ✅ Corrige la ruta del mensaje
 
     if (message.toLowerCase() === '!dragon') {
-      this.sendChatMessage(event.broadcaster_user_id, await this.tw.updateDragon(username));
+      this.sendChatMessage(event.broadcaster_user_id, await this.tw.updateDragon(event));
     }
   }
 
