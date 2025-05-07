@@ -27,7 +27,7 @@ export class TwitchUsersService {
 
     /** RUTA */
     //Comprobar si tiene dragon
-    const trainer = this.checkUserIsTrainer(username);
+    const trainer = await this.checkUserIsTrainer(username);
 
     console.log(trainer);
     
