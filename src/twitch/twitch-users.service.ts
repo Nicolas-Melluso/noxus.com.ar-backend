@@ -28,8 +28,13 @@ export class TwitchUsersService {
     /** RUTA */
     //Comprobar si tiene dragon
     const trainer = this.checkUserIsTrainer(username);
+
+    console.log(trainer);
+    
     // SI NO TIENE crearle uno
     // SI YA TIENE mostrarle el dragón y su XP
+
+ 
 
     try {
       const isLive = await this.twitchApiService.isStreamerLive(); // ✅ Ahora está disponible
@@ -46,7 +51,6 @@ export class TwitchUsersService {
       username: username
     })
 
-    console.log(exist);
-    
+    return Array.isArray(exist) ? exist.length > 0 : false;
   }
 }
