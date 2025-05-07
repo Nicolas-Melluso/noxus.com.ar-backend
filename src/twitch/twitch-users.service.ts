@@ -4,6 +4,7 @@ import { TwitchApiService } from './twitch-api.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TwitchUser } from './twitch-users.entity';
 import { Repository } from 'typeorm';
+import { Dragon } from './dragon.entity';
 
 @Injectable()
 export class TwitchUsersService {
@@ -29,10 +30,19 @@ export class TwitchUsersService {
     //Comprobar si tiene dragon
     const trainer = await this.checkUserIsTrainer(username);
 
-    console.log(trainer);
+    console.log(trainer); //ACA TENGO SI ES TRUE O FALSE si tiene huevo o no
+
+    if (trainer) {
+      //ACA SI YA TIENE HUEVO
+      // SI YA TIENE mostrarle el dragón y su XP
+      this.createDragon(username);
+
+    } else {
+      //ACA SI NO TIENE HUEVO
+      // SI NO TIENE crearle uno
+      this.createDragon(username);
+    }
     
-    // SI NO TIENE crearle uno
-    // SI YA TIENE mostrarle el dragón y su XP
 
  
 
@@ -52,5 +62,11 @@ export class TwitchUsersService {
     })
 
     return Array.isArray(exist) ? exist.length > 0 : false;
+  }
+
+  async createDragon(username) {
+    const miDragon = new Dragon('', 'egg', { personality: '', ability: ''}, '', '')
+
+    console.log(miDragon);
   }
 }
