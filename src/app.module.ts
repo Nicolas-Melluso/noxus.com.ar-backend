@@ -7,6 +7,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
 import { TwitchModule } from './twitch/twitch.module';
 import { AuthModule } from './auth/auth.module';
+import { EventModule } from './calendar/events.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     TwitchModule,
     AuthModule,
+    EventModule
   ],
   controllers: [AppController],
   providers: [AppService],
