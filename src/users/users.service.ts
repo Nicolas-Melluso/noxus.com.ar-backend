@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -10,6 +11,10 @@ export class UsersService {
         private usersRepository: Repository<User>,
       ) {}
     
+      async findOneByEmail(email: string): Promise<User | undefined> {
+        return this.usersRepository.findOne({ where: { email } });
+      }
+
       findAll(): Promise<User[]> {
         return this.usersRepository.find();
       }
@@ -18,7 +23,30 @@ export class UsersService {
         return this.usersRepository.findOneBy({ userId });
       }
     
-      create(user: Partial<User>): Promise<User> {
+      async create(user: Partial<User>): Promise<User> {
+        let passHashed: string;
+
+        console.log(user);
+        
+        if (user.password) {
+          try {
+            passHashed = await new Promise<string>((resolve, reject) => {
+              bcrypt.hash(user.password!, 7, (err, hash) => {
+                if (err) {
+                  console.error("Algo salió mal hasheando la contraseña", err);
+                  reject(err);
+                } else {
+                  resolve(hash);
+                }
+              });
+            });
+
+            user.password = passHashed;
+          } catch (error) {
+            throw new Error("Error al encriptar la contraseña");
+          }
+        }
+
         return this.usersRepository.save(user);
       }
     

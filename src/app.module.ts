@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
 import { TwitchModule } from './twitch/twitch.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -24,6 +25,7 @@ import { TwitchModule } from './twitch/twitch.module';
     TransactionsModule,
     UsersModule,
     TwitchModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
