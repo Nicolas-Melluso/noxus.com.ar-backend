@@ -32,4 +32,12 @@ export class EventService {
   async delete(id: number): Promise<void> {
     await this.eventRepository.delete(id);
   }
+
+  async findOneBy(date): Promise<Events> {
+    return await this.eventRepository.findOneBy(date);
+  }
+
+  async save(event: Events): Promise<Events> {
+    return this.eventRepository.save(event);
+  }
 }

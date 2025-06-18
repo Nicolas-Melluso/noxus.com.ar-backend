@@ -1,22 +1,37 @@
-import { IsString, IsArray, IsNotEmpty } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsArray } from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
-  @IsNotEmpty()
-  date: string; // YYYY-MM-DD
+  date: string;
 
   @IsString()
-  @IsNotEmpty()
   title: string;
 
   @IsString()
-  @IsNotEmpty()
-  time: string; // HH:mm
+  time: string;
 
   @IsString()
-  description?: string;
+  description: string;
 
+  @IsString()
+  type: string;
+
+  @IsOptional()
+  @IsString()
+  homeTeam: string;
+
+  @IsOptional()
+  @IsString()
+  awayTeam: string;
+
+  @IsOptional()
+  @IsString()
+  place: string;
+
+  @IsOptional()
+  price: number;
+
+  @IsOptional()
   @IsArray()
-  @IsString({ each: true })
   roles: string[];
 }
