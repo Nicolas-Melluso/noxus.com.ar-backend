@@ -9,7 +9,6 @@ import { ScorerDto } from './scorer.dto';
 export class EventsController {
   constructor(private readonly eventRepository: EventService) {}
 
-  // CREAR EVENTO (solo admin)
   @Post()
   async createEvent(@Body() event: CreateEventDto): Promise<Events> {
     return this.eventRepository.create(event);
