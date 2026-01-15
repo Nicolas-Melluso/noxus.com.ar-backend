@@ -6,6 +6,7 @@ import { TwitchModule } from './twitch/twitch.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
+import { RedisModule } from '@nestjs/redis';
 
 @Module({
   imports: [
@@ -24,8 +25,11 @@ import { EventsModule } from './events/events.module';
     AuthModule,
     UsersModule,
     EventsModule,
+    RedisModule.forRoot({
+      url: 'redis://localhost:6379',
+    }),
   ],
   controllers: [],
   providers: [AppService],
 })
-export class AppModule {} 
+export class AppModule {}
