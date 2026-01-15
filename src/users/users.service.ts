@@ -27,4 +27,21 @@ export class UsersService {
   async updateRefreshToken(userId, refreshToken): Promise<void> {
     await this.userRepository.update(userId, { refreshToken });
   }
+
+  private users: User[] = [];
+
+  findAll(): User[] {
+    return this.users;
+  }
+
+  findByRole(role: string): User[] {
+    return this.users.filter(user => user.role === role);
+  }
+
+  assignRole(userId: string, role: string): void {
+    const user = this.users.find(user => user.id === userId);
+    if (user) {
+      user.role = role;
+    }
+  }
 }
