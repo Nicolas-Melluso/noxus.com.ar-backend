@@ -1,14 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TransactionsModule } from './transactions/transactions.module';
-import { UsersModule } from './users/users.module';
 import { TwitchModule } from './twitch/twitch.module';
 import { AuthModule } from './auth/auth.module';
-import { EventModule } from './calendar/events.module';
-
+import { UsersModule } from './users/users.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -23,13 +20,12 @@ import { EventModule } from './calendar/events.module';
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
     synchronize: false,
     }),
-    TransactionsModule,
-    UsersModule,
     TwitchModule,
     AuthModule,
-    EventModule
+    UsersModule,
+    EventsModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [AppService],
 })
 export class AppModule {} 

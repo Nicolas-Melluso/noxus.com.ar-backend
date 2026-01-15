@@ -1,25 +1,25 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './local.strategy/local.strategy.service';
-import { JwtStrategy } from './jwt.strategy/jwt.strategy.service';
-import { RolesGuard } from './roles/roles.guard';
+import { OAuth2Strategy } from 'passport-oauth2';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
-    PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secretKey',
-      signOptions: { expiresIn: '1h' }
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
     }),
+    PassportModule.register({ defaultStrategy: 'oauth2' }),
   ],
+  providers: [AuthService, JwtStrategy, OAuth2Strategy],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RolesGuard],
-  exports: [AuthService]
+  exports: [PassportModule],
 })
 export class AuthModule {}

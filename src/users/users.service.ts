@@ -2,60 +2,29 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectRepository(User)
-        private usersRepository: Repository<User>,
-      ) {}
-    
-      async findOneByEmail(email: string): Promise<User | undefined> {
-        return this.usersRepository.findOne({ where: { email } });
-      }
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
-      findAll(): Promise<User[]> {
-        return this.usersRepository.find();
-      }
-    
-      findOne(userId: number): Promise<User> {
-        return this.usersRepository.findOneBy({ userId });
-      }
-    
-      async create(user: Partial<User>): Promise<User> {
-        let passHashed: string;
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
 
-        console.log(user);
-        
-        if (user.password) {
-          try {
-            passHashed = await new Promise<string>((resolve, reject) => {
-              bcrypt.hash(user.password!, 7, (err, hash) => {
-                if (err) {
-                  console.error("Algo salió mal hasheando la contraseña", err);
-                  reject(err);
-                } else {
-                  resolve(hash);
-                }
-              });
-            });
+  async create(userData: Partial<User>): Promise<User> {
+    const user = this.userRepository.create(userData);
+    await user.saveWithHash();
+    return await this.userRepository.save(user);
+  }
 
-            user.password = passHashed;
-          } catch (error) {
-            throw new Error("Error al encriptar la contraseña");
-          }
-        }
+  async findOne(id: string): Promise<User> {
+    return await this.userRepository.findOne({ where: { id } });
+  }
 
-        return this.usersRepository.save(user);
-      }
-    
-      async update(id: number, user: Partial<User>): Promise<User> {
-        await this.usersRepository.update(id, user);
-        return this.findOne(id);
-      }
-    
-      async remove(id: number): Promise<void> {
-        await this.usersRepository.delete(id);
-      }
+  async updateRefreshToken(userId, refreshToken): Promise<void> {
+    await this.userRepository.update(userId, { refreshToken });
+  }
 }

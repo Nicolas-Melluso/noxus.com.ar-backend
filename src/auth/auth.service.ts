@@ -1,44 +1,77 @@
-// src/auth/auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOneByEmail(email);
-    
-    if (user && await bcrypt.compare(pass, user.password)) {
+    const user = await this.usersService.findByEmail(email);
+    if (user && await user.validatePassword(pass)) {
       const { password, ...result } = user;
       return result;
     }
-    return null;
+    throw new UnauthorizedException('Credenciales inválidas');
   }
 
-  async signIn(email: string, pass: string): Promise<any> {
-    const user = await this.validateUser(email, pass);
+  async login(user: any) {
+    const payload = { email: user.email, sub: user.id, role: user.role };
 
-    if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas');
+    await this.usersService.updateRefreshToken(user.id, this.jwtService.sign(payload, { expiresIn: '7d' }));
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      user: {
+        id: user.id,
+        role: user.role,
+      },
+    };
+  }
+
+  async register(name: string, email: string, password: string) {
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new UnauthorizedException('Email ya registrado');
     }
 
-    const payload = { 
-      email: user.email, 
-      sub: user.userId,
-      roles: user.roles
-    };
-    
+    const newUser = await this.usersService.create({
+      name,
+      email,
+      password,
+    });
+
+    const payload = { email: newUser.email, sub: newUser.id, role: newUser.role };
     return {
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
       user: {
-        role: user.roles
+        id: newUser.id,
+        role: newUser.role,
       },
-      access_token: this.jwtService.sign(payload),
     };
   }
+
+  async refresh(refreshToken: string) {
+  try {
+    const decoded = this.jwtService.verify(refreshToken);
+    
+    const user = await this.usersService.findOne(decoded.sub);
+
+    if (user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
+
+    const payload = { email: user.email, sub: user.id, role: user.role };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  } catch (error) {
+    throw new UnauthorizedException('Refresh token inválido');
+  }
+}
 }
