@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as cookieParser from 'cookie-parser';
+import * as csurf from 'csurf';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +23,9 @@ async function bootstrap() {
     }
     next();
   });
+
+  app.use(cookieParser());
+  app.use(csurf({ cookie: true }));
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
