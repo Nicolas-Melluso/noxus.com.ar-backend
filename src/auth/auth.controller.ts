@@ -2,12 +2,14 @@ import { Controller, Post, Body, HttpException, HttpStatus, Get, Req, Res, UseGu
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService
   ) {}
 
   @Post('login')
@@ -38,22 +40,36 @@ export class AuthController {
     return req.user;
   }
 
+  // GoogleStrategy en /auth/oauth2 y /auth/oauth2/callback
   @Get('oauth2')
-  @UseGuards(AuthGuard('oauth2'))
-  async oauthLogin(@Req() req) {
-    // El flujo de OAuth2 redirige automáticamente al proveedor
-    return { message: 'Redirigiendo a proveedor OAuth2...' };
+  @UseGuards(AuthGuard('google'))
+  async oauth2GoogleLogin() {
+    return { message: 'Redirigiendo a Google...' };
   }
 
   @Get('oauth2/callback')
-  @UseGuards(AuthGuard('oauth2'))
-  async oauthCallback(@Req() req, @Res() res) {
-    // Generar un JWT para el usuario autenticado
+  @UseGuards(AuthGuard('google'))
+  async oauth2GoogleCallback(@Req() req, @Res() res) {
     const user = req.user;
-    // Puedes adaptar los campos según tu modelo
-    const payload = { email: user.email, sub: user.id || user.sub, role: user.role || 'user' };
+    // Guardar o actualizar usuario en la base de datos
+    let dbUser = await this.usersService.findByEmail(user.email);
+    if (!dbUser) {
+      dbUser = await this.usersService.create({
+        email: user.email,
+        name: user.name,
+        password: Math.random().toString(36).slice(-8), // random, no se usa
+        role: 'socio',
+      });
+    } else {
+      // Actualizar nombre si cambió
+      if (dbUser.name !== user.name) {
+        dbUser.name = user.name;
+        await this.usersService.updateUser(dbUser); // Usar método público
+      }
+    }
+    // Generar JWT con email, name y id
+    const payload = { email: dbUser.email, name: dbUser.name, id: dbUser.id };
     const token = this.jwtService.sign(payload);
-    // Redirigir al frontend SPA con el token como query param
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5500';
     res.redirect(`${frontendUrl}/login-success?token=${token}`);
   }

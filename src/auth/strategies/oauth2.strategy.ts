@@ -14,7 +14,7 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
       callbackURL: process.env.OAUTH2_CALLBACK_URL || 'http://localhost:3000/auth/oauth2/callback',
       scope: ['profile', 'email'],
     });
-    console.log('OAuth2Strategy initialized');
+    
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: Function) {
@@ -29,10 +29,9 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
         password: Math.random().toString(36).slice(-8), // Password random, no se usará
         role: 'socio',
       });
-      console.log('Usuario creado por OAuth2 (id numérico):', user);
-    } else {
-      console.log('Usuario encontrado por OAuth2 (id numérico):', user);
+      
     }
+    
     // Devolver el id real (user.id) como number para el JWT, usando sub para máxima compatibilidad
     done(null, { sub: Number(user.id), id: Number(user.id), email: user.email, role: user.role });
   }

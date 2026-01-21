@@ -6,7 +6,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { OAuth2Strategy } from './strategies/oauth2.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -16,9 +16,9 @@ import { OAuth2Strategy } from './strategies/oauth2.strategy';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
-    PassportModule.register({ defaultStrategy: 'oauth2' }),
+    PassportModule.register({ defaultStrategy: 'google' }),
   ],
-  providers: [AuthService, JwtStrategy, OAuth2Strategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   controllers: [AuthController],
   exports: [PassportModule],
 })

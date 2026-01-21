@@ -46,8 +46,7 @@ export class FinanzasService {
     }
 
     async saveUserTransactions(userId: number, transactions: any[]) {
-        console.log('--- [saveUserTransactions] transacciones recibidas ---');
-        console.log(JSON.stringify(transactions, null, 2));
+      
       // Validar que el usuario existe antes de guardar
       // Permitir userId como string o number y validar NaN/null
       const numUserId = Number(userId);
@@ -56,7 +55,7 @@ export class FinanzasService {
         throw new Error('userId inválido en la sesión. Reautentica.');
       }
       const userExists = await this.transactionRepo.manager.query('SELECT id FROM users WHERE id = ?', [numUserId]);
-      console.log('[saveUserTransactions] userId recibido:', userId, 'existe:', userExists.length > 0);
+      
       if (!userExists.length) {
         throw new Error('El usuario no existe en la base de datos. Reautentica tu sesión.');
       }
@@ -67,13 +66,12 @@ export class FinanzasService {
             const { userId: _ignored, id: _id, ...rest } = t;
             return { ...rest, userId: numUserId };
           });
-        console.log('--- [saveUserTransactions] transacciones filtradas y listas para guardar ---');
-        console.log(JSON.stringify(txWithUser, null, 2));
+          
       // Borra todas las transacciones previas del usuario
       await this.transactionRepo.delete({ userId });
         // Inserta las nuevas transacciones con el userId correcto
         await this.transactionRepo.save(txWithUser);
-        console.log('--- [saveUserTransactions] transacciones guardadas (count):', txWithUser.length);
-      return { ok: true };
+       
+        return { ok: true };
     }
   }

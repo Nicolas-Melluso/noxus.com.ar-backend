@@ -32,13 +32,11 @@ export class TwitchController {
       
       // Verificación de webhook
       if (messageType === 'webhook_callback_verification') {
-        console.log('Verificación de webhook recibida');
         return res.type('text/plain').send(body.challenge);
       }
 
       // Notificación de evento
       if (messageType === 'notification') {
-        console.log('Evento recibido:', body.subscription.type);
         await this.processTwitchEvent(body);
       }
 

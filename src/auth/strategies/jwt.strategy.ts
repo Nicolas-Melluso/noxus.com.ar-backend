@@ -13,12 +13,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Asegura que tanto req.user.id como req.user.userId estén presentes
+    // Siempre devolver un objeto con id, email y name
     return {
-      id: payload.sub,
-      userId: payload.sub,
+      id: payload.id || payload.sub,
       email: payload.email,
-      role: payload.role
+      name: payload.name,
+      role: payload.role || 'socio',
     };
   }
 }

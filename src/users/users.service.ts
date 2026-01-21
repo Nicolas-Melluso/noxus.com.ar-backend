@@ -25,7 +25,6 @@ export class UsersService {
       role: userData.role || 'socio',
       refreshToken: userData.refreshToken || null
     };
-    console.log('Creando usuario con:', cleanData);
     const user = this.userRepository.create(cleanData);
     return await this.userRepository.save(user);
   }
@@ -37,6 +36,10 @@ export class UsersService {
 
   async updateRefreshToken(userId, refreshToken): Promise<void> {
     await this.userRepository.update(userId, { refreshToken });
+  }
+
+  async updateUser(user: User): Promise<User> {
+    return await this.userRepository.save(user);
   }
 
   private users: User[] = [];
