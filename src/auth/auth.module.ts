@@ -6,7 +6,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { OAuth2Strategy } from 'passport-oauth2';
+import { OAuth2Strategy } from './strategies/oauth2.strategy';
 
 @Module({
   imports: [
