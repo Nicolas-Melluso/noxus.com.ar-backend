@@ -6,6 +6,13 @@ import { FinanzasService } from './finanzas.service';
 export class FinanzasController {
   constructor(private readonly finanzasService: FinanzasService) {}
 
+@Get('transactions')
+  
+  @Get('testing')
+  async testing() {
+    return "Estamos conectados";
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('export')
   async exportData(@Request() req, @Body() data: any) {
