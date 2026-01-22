@@ -126,6 +126,22 @@ export class FinanzasService {
       return rest;
     }
 
+      // Filter payload to only properties existing in the entity repository metadata
+      private filterEntityPayload(repo: Repository<any>, payload: any) {
+        if (!payload || typeof payload !== 'object') return {};
+        const allowed = repo.metadata.columns.map(c => c.propertyName);
+        const out: any = {};
+        Object.keys(payload).forEach(k => {
+          if (allowed.includes(k)) out[k] = payload[k];
+        });
+        // Map some common frontend keys to entity property names
+        // e.g., frontend uses `nextExecution` while entity stores `nextDate`
+        if ('nextExecution' in payload && allowed.includes('nextDate')) {
+          out.nextDate = payload.nextExecution;
+        }
+        return out;
+      }
+
     // Debts
     async getUserDebts(userId: number) {
       return await this.debtRepo.find({ where: { userId } });
@@ -151,7 +167,8 @@ export class FinanzasService {
     }
 
     async updateDebt(userId: number, id: number, debt: any) {
-      const payload = { ...this.stripId(debt), userId };
+      const raw = { ...this.stripId(debt), userId };
+      const payload = this.filterEntityPayload(this.debtRepo, raw);
       await this.debtRepo.update({ id, userId }, payload);
       const updated = await this.debtRepo.findOne({ where: { id, userId } });
       return { ok: true, debt: updated };
@@ -174,7 +191,8 @@ export class FinanzasService {
     }
 
     async updateRecurring(userId: number, id: number, recurring: any) {
-      const payload = { ...this.stripId(recurring), userId };
+      const raw = { ...this.stripId(recurring), userId };
+      const payload = this.filterEntityPayload(this.recurringRepo, raw);
       await this.recurringRepo.update({ id, userId }, payload);
       const updated = await this.recurringRepo.findOne({ where: { id, userId } });
       return { ok: true, recurring: updated };
@@ -197,7 +215,8 @@ export class FinanzasService {
     }
 
     async updateBudget(userId: number, id: number, budget: any) {
-      const payload = { ...this.stripId(budget), userId };
+      const raw = { ...this.stripId(budget), userId };
+      const payload = this.filterEntityPayload(this.budgetRepo, raw);
       await this.budgetRepo.update({ id, userId }, payload);
       const updated = await this.budgetRepo.findOne({ where: { id, userId } });
       return { ok: true, budget: updated };
