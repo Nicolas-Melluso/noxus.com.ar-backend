@@ -1,18 +1,25 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-@Entity()
+
+@Entity('notifications')
 export class Notification {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+
+  @Column({ name: 'user_id', type: 'int' })
   userId: number;
+
   @Column()
   type: string;
+
   @Column()
   title: string;
+
   @Column()
   message: string;
+
   @Column({ nullable: true })
   date: string;
-  @Column({ nullable: true })
+
+  @Column({ name: 'read', type: 'boolean', default: false })
   read: boolean;
 }
