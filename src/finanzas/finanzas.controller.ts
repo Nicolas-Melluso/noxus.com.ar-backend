@@ -69,6 +69,31 @@ export class FinanzasController {
     return this.finanzasService.deleteDebt(req.user.id, Number(id));
   }
 
+  // Item-level CRUD for recurrings
+  @Post('recurrings/item')
+  @UseGuards(JwtAuthGuard)
+  async createRecurring(@Request() req, @Body() recurring: any) {
+    return this.finanzasService.createRecurring(req.user.id, recurring);
+  }
+
+  @Get('recurrings/:id')
+  @UseGuards(JwtAuthGuard)
+  async getRecurring(@Request() req, @Param('id') id: string) {
+    return this.finanzasService.getRecurringById(req.user.id, Number(id));
+  }
+
+  @Put('recurrings/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateRecurring(@Request() req, @Param('id') id: string, @Body() recurring: any) {
+    return this.finanzasService.updateRecurring(req.user.id, Number(id), recurring);
+  }
+
+  @Delete('recurrings/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteRecurring(@Request() req, @Param('id') id: string) {
+    return this.finanzasService.deleteRecurring(req.user.id, Number(id));
+  }
+
   // GET /finanzas/recurrings -> obtener recurrings del usuario
   @Get('recurrings')
   @UseGuards(JwtAuthGuard)

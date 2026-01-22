@@ -162,6 +162,29 @@ export class FinanzasService {
       return { ok: true, affected: res.affected };
     }
 
+    // CRUD for recurrings (item-level)
+    async createRecurring(userId: number, recurring: any) {
+      const payload = { ...this.stripId(recurring), userId };
+      const saved = await this.recurringRepo.save(payload);
+      return { ok: true, recurring: saved };
+    }
+
+    async getRecurringById(userId: number, id: number) {
+      return await this.recurringRepo.findOne({ where: { id, userId } });
+    }
+
+    async updateRecurring(userId: number, id: number, recurring: any) {
+      const payload = { ...this.stripId(recurring), userId };
+      await this.recurringRepo.update({ id, userId }, payload);
+      const updated = await this.recurringRepo.findOne({ where: { id, userId } });
+      return { ok: true, recurring: updated };
+    }
+
+    async deleteRecurring(userId: number, id: number) {
+      const res = await this.recurringRepo.delete({ id, userId });
+      return { ok: true, affected: res.affected };
+    }
+
     // Recurrings
     async getUserRecurrings(userId: number) {
       return await this.recurringRepo.find({ where: { userId } });
