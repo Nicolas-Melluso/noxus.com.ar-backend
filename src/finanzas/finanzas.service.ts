@@ -118,4 +118,136 @@ export class FinanzasService {
 
       return { ok: true, saved: txWithUser.length };
     }
+
+    // Helper to strip client-provided id
+    private stripId(obj: any) {
+      if (!obj || typeof obj !== 'object') return obj;
+      const { id, ...rest } = obj as any;
+      return rest;
+    }
+
+    // Debts
+    async getUserDebts(userId: number) {
+      return await this.debtRepo.find({ where: { userId } });
+    }
+
+    async saveUserDebts(userId: number, debts: any[]) {
+      if (!Array.isArray(debts)) debts = [];
+      const debtsToSave = debts.map(d => ({ ...this.stripId(d), userId }));
+      await this.debtRepo.delete({ userId });
+      if (debtsToSave.length) await this.debtRepo.save(debtsToSave);
+      return { ok: true, saved: debtsToSave.length };
+    }
+
+    // CRUD por ítem para debts
+    async createDebt(userId: number, debt: any) {
+      const payload = { ...this.stripId(debt), userId };
+      const saved = await this.debtRepo.save(payload);
+      return { ok: true, debt: saved };
+    }
+
+    async getDebtById(userId: number, id: number) {
+      return await this.debtRepo.findOne({ where: { id, userId } });
+    }
+
+    async updateDebt(userId: number, id: number, debt: any) {
+      const payload = { ...this.stripId(debt), userId };
+      await this.debtRepo.update({ id, userId }, payload);
+      const updated = await this.debtRepo.findOne({ where: { id, userId } });
+      return { ok: true, debt: updated };
+    }
+
+    async deleteDebt(userId: number, id: number) {
+      const res = await this.debtRepo.delete({ id, userId });
+      return { ok: true, affected: res.affected };
+    }
+
+    // CRUD for recurrings (item-level)
+    async createRecurring(userId: number, recurring: any) {
+      const payload = { ...this.stripId(recurring), userId };
+      const saved = await this.recurringRepo.save(payload);
+      return { ok: true, recurring: saved };
+    }
+
+    async getRecurringById(userId: number, id: number) {
+      return await this.recurringRepo.findOne({ where: { id, userId } });
+    }
+
+    async updateRecurring(userId: number, id: number, recurring: any) {
+      const payload = { ...this.stripId(recurring), userId };
+      await this.recurringRepo.update({ id, userId }, payload);
+      const updated = await this.recurringRepo.findOne({ where: { id, userId } });
+      return { ok: true, recurring: updated };
+    }
+
+    async deleteRecurring(userId: number, id: number) {
+      const res = await this.recurringRepo.delete({ id, userId });
+      return { ok: true, affected: res.affected };
+    }
+
+    // Recurrings
+    async getUserRecurrings(userId: number) {
+      return await this.recurringRepo.find({ where: { userId } });
+    }
+
+    async saveUserRecurrings(userId: number, recurrings: any[]) {
+      if (!Array.isArray(recurrings)) recurrings = [];
+      const toSave = recurrings.map(r => ({ ...this.stripId(r), userId }));
+      await this.recurringRepo.delete({ userId });
+      if (toSave.length) await this.recurringRepo.save(toSave);
+      return { ok: true, saved: toSave.length };
+    }
+
+    // Budgets
+    async getUserBudgets(userId: number) {
+      return await this.budgetRepo.find({ where: { userId } });
+    }
+
+    async saveUserBudgets(userId: number, budgets: any[]) {
+      if (!Array.isArray(budgets)) budgets = [];
+      const toSave = budgets.map(b => ({ ...this.stripId(b), userId }));
+      await this.budgetRepo.delete({ userId });
+      if (toSave.length) await this.budgetRepo.save(toSave);
+      return { ok: true, saved: toSave.length };
+    }
+
+    // Notifications
+    async getUserNotifications(userId: number) {
+      return await this.notificationRepo.find({ where: { userId } });
+    }
+
+    async saveUserNotifications(userId: number, notifications: any[]) {
+      if (!Array.isArray(notifications)) notifications = [];
+      const toSave = notifications.map(n => ({ ...this.stripId(n), userId }));
+      await this.notificationRepo.delete({ userId });
+      if (toSave.length) await this.notificationRepo.save(toSave);
+      return { ok: true, saved: toSave.length };
+    }
+
+    // Custom keywords
+    async getCustomKeywords(userId: number) {
+      return await this.customKeywordRepo.find({ where: { userId } });
+    }
+
+    async saveCustomKeywords(userId: number, payload: any) {
+      // payload can be array or object mapping
+      let arr: any[] = [];
+      if (Array.isArray(payload)) arr = payload.map((k: any) => ({ keyword: String(k) }));
+      else if (payload && typeof payload === 'object') {
+        if (Array.isArray(payload)) arr = payload.map((k: any) => ({ keyword: String(k) }));
+        else if (Object.keys(payload).length) {
+          // payload could be { type: { ... }, category: { ... } } -> flatten values
+          const flat: string[] = [];
+          Object.values(payload).forEach((v: any) => {
+            if (Array.isArray(v)) flat.push(...v.map((x: any) => String(x)));
+            else if (typeof v === 'object') Object.values(v).forEach((vv: any) => { if (Array.isArray(vv)) flat.push(...vv.map((x: any) => String(x))); });
+          });
+          arr = flat.map(k => ({ keyword: String(k) }));
+        }
+      }
+      const toSave = arr.map(k => ({ ...k, userId }));
+      await this.customKeywordRepo.delete({ userId });
+      if (toSave.length) await this.customKeywordRepo.save(toSave);
+      return { ok: true, saved: toSave.length };
+    }
   }
