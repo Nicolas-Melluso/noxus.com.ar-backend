@@ -39,12 +39,33 @@ export class FinanzasService {
       await this.recurringRepo.delete({ userId });
       await this.customKeywordRepo.delete({ userId });
 
-      // Inserta nuevos datos (map seguro sobre arrays)
-      await this.transactionRepo.save(transactionsArr.map((t) => ({ ...t, userId })));
-      await this.debtRepo.save(debtsArr.map((d) => ({ ...d, userId })));
-      await this.budgetRepo.save(budgetsArr.map((b) => ({ ...b, userId })));
-      await this.notificationRepo.save(notificationsArr.map((n) => ({ ...n, userId })));
-      await this.recurringRepo.save(recurringsArr.map((r) => ({ ...r, userId })));
+      // Inserta nuevos datos *sin* respetar ids del cliente (evitar colisiones/overflows)
+      const stripId = (obj: any) => {
+        if (!obj || typeof obj !== 'object') return obj;
+        const { id, ...rest } = obj;
+        return rest;
+      };
+
+      const txToSave = transactionsArr.map((t) => ({ ...stripId(t), userId }));
+      const debtsToSave = debtsArr.map((d) => ({ ...stripId(d), userId }));
+      const budgetsToSave = budgetsArr.map((b) => ({ ...stripId(b), userId }));
+      const notificationsToSave = notificationsArr.map((n) => ({ ...stripId(n), userId }));
+      const recurringsToSave = recurringsArr.map((r) => ({ ...stripId(r), userId }));
+
+      // Log small summary for debugging migrations
+      console.log('[saveAllData] migrating counts ->', {
+        transactions: txToSave.length,
+        debts: debtsToSave.length,
+        budgets: budgetsToSave.length,
+        notifications: notificationsToSave.length,
+        recurrings: recurringsToSave.length,
+      });
+
+      await this.transactionRepo.save(txToSave);
+      await this.debtRepo.save(debtsToSave);
+      await this.budgetRepo.save(budgetsToSave);
+      await this.notificationRepo.save(notificationsToSave);
+      await this.recurringRepo.save(recurringsToSave);
 
       // Custom keywords es un objeto, lo convertimos a array de strings
       const keywordsObj = data.customKeywords || {};
