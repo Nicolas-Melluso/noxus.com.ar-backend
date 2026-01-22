@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, Param, Put, Delete, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FinanzasService } from './finanzas.service';
 
@@ -52,21 +52,33 @@ export class FinanzasController {
   @Get('debts/:id')
   @UseGuards(JwtAuthGuard)
   async getDebt(@Request() req, @Param('id') id: string) {
-    return this.finanzasService.getDebtById(req.user.id, Number(id));
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.getDebtById(req.user.id, numericId);
   }
 
   // PUT /finanzas/debts/:id -> actualizar una deuda
   @Put('debts/:id')
   @UseGuards(JwtAuthGuard)
   async updateDebt(@Request() req, @Param('id') id: string, @Body() debt: any) {
-    return this.finanzasService.updateDebt(req.user.id, Number(id), debt);
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.updateDebt(req.user.id, numericId, debt);
   }
 
   // DELETE /finanzas/debts/:id -> borrar una deuda
   @Delete('debts/:id')
   @UseGuards(JwtAuthGuard)
   async deleteDebt(@Request() req, @Param('id') id: string) {
-    return this.finanzasService.deleteDebt(req.user.id, Number(id));
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.deleteDebt(req.user.id, numericId);
   }
 
   // Item-level CRUD for recurrings
