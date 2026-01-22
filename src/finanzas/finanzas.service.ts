@@ -72,23 +72,29 @@ export class FinanzasService {
         throw new Error('userId inválido en la sesión. Reautentica.');
       }
       const userExists = await this.transactionRepo.manager.query('SELECT id FROM users WHERE id = ?', [numUserId]);
-      
+
       if (!userExists.length) {
         throw new Error('El usuario no existe en la base de datos. Reautentica tu sesión.');
       }
-        // Filtrar y limpiar transacciones: solo nuevas (sin id definido o igual a 0), y eliminar cualquier campo id
-        const txWithUser = transactions
-          .filter(t => t.id === undefined || t.id === null || t.id === 0)
-          .map((t) => {
-            const { userId: _ignored, id: _id, ...rest } = t;
-            return { ...rest, userId: numUserId };
-          });
-          
+
+      if (!Array.isArray(transactions)) transactions = [];
+
+      // Normalizar: eliminar cualquier id proporcionado por el cliente y asignar userId
+      const txWithUser = transactions.map((t) => {
+        const { userId: _ignored, id: _id, ...rest } = t || {};
+        return { ...rest, userId: numUserId };
+      });
+
+      console.log(`[saveUserTransactions] user=${numUserId} received ${transactions.length} items, saving ${txWithUser.length}`);
+
       // Borra todas las transacciones previas del usuario
-      await this.transactionRepo.delete({ userId });
-        // Inserta las nuevas transacciones con el userId correcto
+      await this.transactionRepo.delete({ userId: numUserId });
+
+      // Inserta las transacciones con el userId correcto
+      if (txWithUser.length > 0) {
         await this.transactionRepo.save(txWithUser);
-       
-        return { ok: true };
+      }
+
+      return { ok: true, saved: txWithUser.length };
     }
   }
