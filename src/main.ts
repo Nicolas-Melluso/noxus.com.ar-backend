@@ -6,32 +6,23 @@ import * as csurf from 'csurf';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Permitir CORS desde producción y localhost:5501 solo en desarrollo
-  const allowedOrigins = ['https://noxus.com.ar', 'http://localhost:5501'];
+  // Habilitar CORS abierto para permitir peticiones desde los microfrontends
+  // Nota: configurado con origin: '*' y sin credenciales (no usar cookies)
   app.enableCors({
-    origin: (origin, callback) => {
-      // Permitir sin origin (por ejemplo, curl) o si está en la lista
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
-    credentials: true
+    credentials: false
   });
 
   app.setGlobalPrefix('api');
   
-  // Middleware adicional para asegurar respuesta a OPTIONS
+  // Responder OPTIONS de forma genérica (no se añadirá header de credenciales)
   app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (req.method === 'OPTIONS' && allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin); 
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, PATCH, DELETE, HEAD');
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.header('Access-Control-Allow-Credentials', 'true');
       return res.sendStatus(200);
     }
     next();
