@@ -185,6 +185,29 @@ export class FinanzasService {
       return { ok: true, affected: res.affected };
     }
 
+    // CRUD for budgets (item-level)
+    async createBudget(userId: number, budget: any) {
+      const payload = { ...this.stripId(budget), userId };
+      const saved = await this.budgetRepo.save(payload);
+      return { ok: true, budget: saved };
+    }
+
+    async getBudgetById(userId: number, id: number) {
+      return await this.budgetRepo.findOne({ where: { id, userId } });
+    }
+
+    async updateBudget(userId: number, id: number, budget: any) {
+      const payload = { ...this.stripId(budget), userId };
+      await this.budgetRepo.update({ id, userId }, payload);
+      const updated = await this.budgetRepo.findOne({ where: { id, userId } });
+      return { ok: true, budget: updated };
+    }
+
+    async deleteBudget(userId: number, id: number) {
+      const res = await this.budgetRepo.delete({ id, userId });
+      return { ok: true, affected: res.affected };
+    }
+
     // Recurrings
     async getUserRecurrings(userId: number) {
       return await this.recurringRepo.find({ where: { userId } });

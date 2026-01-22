@@ -106,6 +106,43 @@ export class FinanzasController {
     return this.finanzasService.deleteRecurring(req.user.id, Number(id));
   }
 
+  // Item-level CRUD for budgets
+  @Post('budgets/item')
+  @UseGuards(JwtAuthGuard)
+  async createBudget(@Request() req, @Body() budget: any) {
+    return this.finanzasService.createBudget(req.user.id, budget);
+  }
+
+  @Get('budgets/:id')
+  @UseGuards(JwtAuthGuard)
+  async getBudget(@Request() req, @Param('id') id: string) {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.getBudgetById(req.user.id, numericId);
+  }
+
+  @Put('budgets/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateBudget(@Request() req, @Param('id') id: string, @Body() budget: any) {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.updateBudget(req.user.id, numericId, budget);
+  }
+
+  @Delete('budgets/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteBudget(@Request() req, @Param('id') id: string) {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('Invalid id parameter');
+    }
+    return this.finanzasService.deleteBudget(req.user.id, numericId);
+  }
+
   // GET /finanzas/recurrings -> obtener recurrings del usuario
   @Get('recurrings')
   @UseGuards(JwtAuthGuard)
