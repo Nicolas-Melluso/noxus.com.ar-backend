@@ -70,7 +70,7 @@ export class AuthController {
     // Generar JWT con email, name y id
     const payload = { email: dbUser.email, name: dbUser.name, id: dbUser.id };
     const token = this.jwtService.sign(payload);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5500';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://noxus.com.ar';
     res.redirect(`${frontendUrl}/login-success?token=${token}`);
   }
 }
