@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from './transaction.entity';
@@ -20,6 +20,17 @@ export class FinanzasService {
   ) {}
 
   async saveAllData(userId: number, data: any) {
+      if (!data || typeof data !== 'object') {
+        throw new BadRequestException('Missing or invalid payload for saveAllData');
+      }
+
+      // Normalizar arrays (si no vienen, usar arrays vacíos)
+      const transactionsArr = Array.isArray(data.transactions) ? data.transactions : [];
+      const debtsArr = Array.isArray(data.debts) ? data.debts : [];
+      const budgetsArr = Array.isArray(data.budgets) ? data.budgets : [];
+      const notificationsArr = Array.isArray(data.notifications) ? data.notifications : [];
+      const recurringsArr = Array.isArray(data.recurring) ? data.recurring : [];
+
       // Borra datos previos del usuario (opcional)
       await this.transactionRepo.delete({ userId });
       await this.debtRepo.delete({ userId });
@@ -27,15 +38,21 @@ export class FinanzasService {
       await this.notificationRepo.delete({ userId });
       await this.recurringRepo.delete({ userId });
       await this.customKeywordRepo.delete({ userId });
-      // Inserta nuevos datos
-      await this.transactionRepo.save(data.transactions.map((t) => ({ ...t, userId })));
-      await this.debtRepo.save(data.debts.map((d) => ({ ...d, userId })));
-      await this.budgetRepo.save(data.budgets.map((b) => ({ ...b, userId })));
-      await this.notificationRepo.save(data.notifications.map((n) => ({ ...n, userId })));
-      await this.recurringRepo.save(data.recurring.map((r) => ({ ...r, userId })));
+
+      // Inserta nuevos datos (map seguro sobre arrays)
+      await this.transactionRepo.save(transactionsArr.map((t) => ({ ...t, userId })));
+      await this.debtRepo.save(debtsArr.map((d) => ({ ...d, userId })));
+      await this.budgetRepo.save(budgetsArr.map((b) => ({ ...b, userId })));
+      await this.notificationRepo.save(notificationsArr.map((n) => ({ ...n, userId })));
+      await this.recurringRepo.save(recurringsArr.map((r) => ({ ...r, userId })));
+
       // Custom keywords es un objeto, lo convertimos a array de strings
-      const keywordsArr = Object.keys(data.customKeywords || {}).map((keyword) => ({ userId, keyword }));
+      const keywordsObj = data.customKeywords || {};
+      const keywordsArr = Array.isArray(keywordsObj)
+        ? keywordsObj.map((k: any) => ({ userId, keyword: String(k) }))
+        : Object.keys(keywordsObj).map((keyword) => ({ userId, keyword }));
       await this.customKeywordRepo.save(keywordsArr);
+
       return { ok: true };
     }
 
