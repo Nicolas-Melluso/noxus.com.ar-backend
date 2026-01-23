@@ -193,6 +193,19 @@ export class FinanzasService {
     async updateRecurring(userId: number, id: number, recurring: any) {
       const raw = { ...this.stripId(recurring), userId };
       const payload = this.filterEntityPayload(this.recurringRepo, raw);
+
+      // If executionCount is present, update it; if not, increment if executionHistory grew
+      if (typeof recurring.executionCount === 'number') {
+        payload.executionCount = recurring.executionCount;
+      } else if (Array.isArray(recurring.executionHistory)) {
+        // Optionally, count executions for current year
+        const currentYear = new Date().getFullYear();
+        const yearExecutions = recurring.executionHistory.filter((date: string) => {
+          return new Date(date).getFullYear() === currentYear;
+        });
+        payload.executionCount = yearExecutions.length;
+      }
+
       await this.recurringRepo.update({ id, userId }, payload);
       const updated = await this.recurringRepo.findOne({ where: { id, userId } });
       return { ok: true, recurring: updated };

@@ -46,4 +46,8 @@ export class Recurring {
 
   @Column({ nullable: true })
   active: boolean;
+
+  // Track number of executions (per year, or total)
+  @Column({ name: 'execution_count', type: 'int', nullable: true, default: 0 })
+  executionCount: number;
 }
