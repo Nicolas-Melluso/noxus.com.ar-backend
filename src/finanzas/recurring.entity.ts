@@ -26,10 +26,10 @@ export class Recurring {
   @Column({ name: 'amount_type', nullable: true })
   amountType: string;
 
-  @Column('decimal', { precision: 8, scale: 2, nullable: true })
+  @Column('decimal', { name: 'variable_percentage', precision: 8, scale: 2, nullable: true })
   variablePercentage: number;
 
-  @Column('decimal', { precision: 12, scale: 2, nullable: true })
+  @Column('decimal', { name: 'incremental_amount', precision: 12, scale: 2, nullable: true })
   incrementalAmount: number;
 
   @Column({ name: 'periodic_months', type: 'int', nullable: true })
