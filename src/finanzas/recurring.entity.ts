@@ -15,6 +15,30 @@ export class Recurring {
   amount: number;
 
   @Column({ nullable: true })
+  currency: string;
+
+  @Column({ nullable: true })
+  category: string;
+
+  @Column({ name: 'category_id', type: 'int', nullable: true })
+  categoryId: number;
+
+  @Column({ name: 'amount_type', nullable: true })
+  amountType: string;
+
+  @Column('decimal', { precision: 8, scale: 2, nullable: true })
+  variablePercentage: number;
+
+  @Column('decimal', { precision: 12, scale: 2, nullable: true })
+  incrementalAmount: number;
+
+  @Column({ name: 'periodic_months', type: 'int', nullable: true })
+  periodicMonths: number;
+
+  @Column({ name: 'remaining_periods', type: 'int', nullable: true })
+  remainingPeriods: number;
+
+  @Column({ nullable: true })
   frequency: string;
 
   @Column({ nullable: true })
