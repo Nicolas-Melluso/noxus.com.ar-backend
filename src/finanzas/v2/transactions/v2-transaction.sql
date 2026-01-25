@@ -1,0 +1,19 @@
+CREATE TABLE v2_transacciones (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  date VARCHAR(32) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  currency VARCHAR(8) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  category VARCHAR(64) NOT NULL,
+  type VARCHAR(16) NOT NULL,
+  paymentMethod VARCHAR(32),
+  tags TEXT,
+  recurringId INT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted BOOLEAN DEFAULT FALSE,
+  notes TEXT,
+  extra JSON,
+  INDEX idx_userId (userId)
+);

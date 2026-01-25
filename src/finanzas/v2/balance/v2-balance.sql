@@ -1,0 +1,16 @@
+CREATE TABLE v2_balances (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  usd_ingresos DECIMAL(12,2) DEFAULT 0,
+  usd_egresos DECIMAL(12,2) DEFAULT 0,
+  usd_deudas DECIMAL(12,2) DEFAULT 0,
+  ars_ingresos DECIMAL(12,2) DEFAULT 0,
+  ars_egresos DECIMAL(12,2) DEFAULT 0,
+  ars_deudas DECIMAL(12,2) DEFAULT 0,
+  eur_ingresos DECIMAL(12,2) DEFAULT 0,
+  eur_egresos DECIMAL(12,2) DEFAULT 0,
+  eur_deudas DECIMAL(12,2) DEFAULT 0,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_user (userId)
+);
