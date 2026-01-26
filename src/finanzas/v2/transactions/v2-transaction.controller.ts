@@ -20,6 +20,13 @@ export class V2TransactionController {
     return this.v2TransactionService.createUserTransaction(req.user.id, tx);
   }
 
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard)
+  async saveTransactions(@Request() req, @Body() transactions: any[]) {
+    console.log('[BACKEND] POST bulk transacciones', req.user.id, transactions);
+    return this.v2TransactionService.saveUserTransactions(req.user.id, transactions);
+  }
+
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   async updateTransaction(@Request() req, @Param('id') id: number, @Body() updates: any) {

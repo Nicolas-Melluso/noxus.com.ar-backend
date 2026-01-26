@@ -43,9 +43,10 @@ export class V2TransactionService {
 
   async createUserTransaction(userId: number, tx: Partial<V2Transaction>): Promise<V2Transaction> {
     console.log('[BACKEND] SERVICE crear transacción', userId, tx);
+    // Elimina el id si viene del frontend
+    if ('id' in tx) delete tx.id;
     const nuevaTx = this.v2TransactionRepo.create({ ...tx, userId, deleted: false });
     await this.v2TransactionRepo.save(nuevaTx);
-    // Recalcular balance
     await this.recalculateBalance(userId);
     return nuevaTx;
   }
