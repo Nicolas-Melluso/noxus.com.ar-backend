@@ -44,7 +44,9 @@ export class V2TransactionService {
   async createUserTransaction(userId: number, tx: Partial<V2Transaction>): Promise<V2Transaction> {
     console.log('[BACKEND] SERVICE crear transacción', userId, tx);
     if ('id' in tx) delete tx.id;
-    const insertResult = await this.v2TransactionRepo.insert({ ...tx, userId, deleted: false });
+    const plainTx = { ...tx, userId, deleted: false };
+    console.log('[BACKEND] OBJETO A INSERTAR:', JSON.stringify(plainTx));
+    const insertResult = await this.v2TransactionRepo.insert(plainTx);
     const newId = insertResult.identifiers[0]?.id;
     const nuevaTx = await this.v2TransactionRepo.findOne({ where: { id: newId } });
     await this.recalculateBalance(userId);
