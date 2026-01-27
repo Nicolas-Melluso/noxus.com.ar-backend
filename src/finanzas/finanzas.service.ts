@@ -7,6 +7,7 @@ import { Budget } from './budget.entity';
 import { Notification } from './notification.entity';
 import { Recurring } from './recurring.entity';
 import { CustomKeyword } from './custom-keyword.entity';
+import { V2TransactionService } from './v2/transactions/v2-transaction.service';
 
 @Injectable()
 export class FinanzasService {
@@ -17,6 +18,7 @@ export class FinanzasService {
     @InjectRepository(Notification) private notificationRepo: Repository<Notification>,
     @InjectRepository(Recurring) private recurringRepo: Repository<Recurring>,
     @InjectRepository(CustomKeyword) private customKeywordRepo: Repository<CustomKeyword>,
+    private v2TransactionService: V2TransactionService,
   ) {}
 
   async saveAllData(userId: number, data: any) {
@@ -159,6 +161,7 @@ export class FinanzasService {
     async createDebt(userId: number, debt: any) {
       const payload = { ...this.stripId(debt), userId };
       const saved = await this.debtRepo.save(payload);
+      await this.v2TransactionService.recalculateUserBalance(userId);
       return { ok: true, debt: saved };
     }
 
@@ -171,11 +174,13 @@ export class FinanzasService {
       const payload = this.filterEntityPayload(this.debtRepo, raw);
       await this.debtRepo.update({ id, userId }, payload);
       const updated = await this.debtRepo.findOne({ where: { id, userId } });
+      await this.v2TransactionService.recalculateUserBalance(userId);
       return { ok: true, debt: updated };
     }
 
     async deleteDebt(userId: number, id: number) {
       const res = await this.debtRepo.delete({ id, userId });
+      await this.v2TransactionService.recalculateUserBalance(userId);
       return { ok: true, affected: res.affected };
     }
 

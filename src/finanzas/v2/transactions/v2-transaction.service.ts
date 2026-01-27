@@ -3,12 +3,15 @@ import { V2BalanceService } from '../balance/v2-balance.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { V2Transaction } from './v2-transaction.entity';
+import { Debt } from '../../debt.entity';
 
 @Injectable()
 export class V2TransactionService {
   constructor(
     @InjectRepository(V2Transaction)
     private readonly v2TransactionRepo: Repository<V2Transaction>,
+    @InjectRepository(Debt)
+    private readonly debtRepo: Repository<Debt>,
     private readonly v2BalanceService: V2BalanceService,
   ) {}
 
@@ -68,6 +71,11 @@ export class V2TransactionService {
     return { success: true };
   }
 
+  // Método público para recalcular balance (usado cuando cambian deudas)
+  async recalculateUserBalance(userId: number) {
+    await this.recalculateBalance(userId);
+  }
+
   private async recalculateBalance(userId: number) {
     const txs = await this.v2TransactionRepo.find({ where: { userId, deleted: false } });
     const balanceData = {
@@ -75,12 +83,25 @@ export class V2TransactionService {
       ars_ingresos: 0, ars_egresos: 0, ars_deudas: 0,
       eur_ingresos: 0, eur_egresos: 0, eur_deudas: 0
     };
+    
+    // Sumar transacciones (income, expense)
     for (const tx of txs) {
       const { amount = 0, type, currency = 'ARS' } = tx;
       if (type === 'income') balanceData[`${currency.toLowerCase()}_ingresos`] += Number(amount);
       else if (type === 'expense') balanceData[`${currency.toLowerCase()}_egresos`] += Number(amount);
-      else if (type === 'debt') balanceData[`${currency.toLowerCase()}_deudas`] += Number(amount);
     }
+    
+    // Calcular deudas pendientes desde la tabla debts
+    const debts = await this.debtRepo.find({ where: { userId } });
+    for (const debt of debts) {
+      const pending = Number(debt.amount || 0) - Number(debt.paid || 0);
+      if (pending > 0) {
+        // Solo sumar deudas que aún tienen saldo pendiente
+        const currency = (debt as any).currency || 'ARS'; // Default ARS si no tiene currency
+        balanceData[`${currency.toLowerCase()}_deudas`] += pending;
+      }
+    }
+    
     await this.v2BalanceService.setUserBalance(userId, balanceData);
   }
 }

@@ -20,4 +20,13 @@ export class Debt {
   // Paid should be numeric (amount already paid), not boolean
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
   paid: number;
+
+  @Column({ default: 'ARS' })
+  currency: string;
+
+  @Column({ nullable: true })
+  category: string;
+
+  @Column({ default: 'pending' })
+  status: string;
 }
