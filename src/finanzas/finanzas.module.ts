@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FinanzasController } from './finanzas.controller';
 import { FinanzasService } from './finanzas.service';
+import { StockPriceService } from './stock-price.service';
 import { Transaction } from './transaction.entity';
 import { Debt } from './debt.entity';
 import { Budget } from './budget.entity';
@@ -24,6 +25,6 @@ import { V2BalanceController } from './v2/balance/v2-balance.controller';
     V2Transaction, V2Balance
   ])],
   controllers: [FinanzasController, V2TransactionController, V2BalanceController],
-  providers: [FinanzasService, V2TransactionService, V2BalanceService],
+  providers: [FinanzasService, V2TransactionService, V2BalanceService, StockPriceService],
 })
 export class FinanzasModule {}

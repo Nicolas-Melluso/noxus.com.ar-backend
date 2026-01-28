@@ -1,10 +1,14 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Param, Put, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, Param, Put, Delete, BadRequestException, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FinanzasService } from './finanzas.service';
+import { StockPriceService } from './stock-price.service';
 
 @Controller('finanzas')
 export class FinanzasController {
-  constructor(private readonly finanzasService: FinanzasService) {}
+  constructor(
+    private readonly finanzasService: FinanzasService,
+    private readonly stockPriceService: StockPriceService,
+  ) {}
 
   // POST /finanzas/export  -> guarda todo el paquete (saveAllData)
   @Post('export')
@@ -197,5 +201,34 @@ export class FinanzasController {
   @UseGuards(JwtAuthGuard)
   async saveCustomKeywords(@Request() req, @Body() payload: any) {
     return this.finanzasService.saveCustomKeywords(req.user.id, payload);
+  }
+
+  // GET /finanzas/stock-prices -> obtener precios de acciones (cacheados 24h)
+  @Get('stock-prices')
+  @UseGuards(JwtAuthGuard)
+  async getStockPrices(@Query('tickers') tickers: string) {
+    if (!tickers) {
+      throw new BadRequestException('Query parameter "tickers" is required (comma-separated)');
+    }
+    const tickerArray = tickers.split(',').map(t => t.trim());
+    return this.stockPriceService.getStockPrices(tickerArray);
+  }
+
+  // GET /finanzas/stock-prices/:ticker -> obtener precio de una acción específica
+  @Get('stock-prices/:ticker')
+  @UseGuards(JwtAuthGuard)
+  async getStockPrice(@Param('ticker') ticker: string) {
+    const result = await this.stockPriceService.getStockPrice(ticker);
+    if (!result) {
+      throw new BadRequestException(`Unable to fetch price for ticker: ${ticker}`);
+    }
+    return result;
+  }
+
+  // GET /finanzas/stock-prices/cache/stats -> estadísticas del caché (debug)
+  @Get('stock-prices/cache/stats')
+  @UseGuards(JwtAuthGuard)
+  async getCacheStats() {
+    return this.stockPriceService.getCacheStats();
   }
 }
