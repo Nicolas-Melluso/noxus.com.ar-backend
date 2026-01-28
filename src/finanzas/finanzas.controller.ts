@@ -203,6 +203,35 @@ export class FinanzasController {
     return this.finanzasService.saveCustomKeywords(req.user.id, payload);
   }
 
+  // GET /finanzas/stock-prices/top -> obtener top 10 acciones recomendadas
+  @Get('stock-prices/top')
+  @UseGuards(JwtAuthGuard)
+  async getTopStocks() {
+    const topTickers = ['SPY', 'NVDA', 'MSFT', 'AAPL', 'GOOGL', 'AMZN', 'META', 'AVGO', 'TSLA', 'ORCL'];
+    const prices = await this.stockPriceService.getStockPrices(topTickers);
+    
+    // Formatear con nombres descriptivos
+    const stockNames = {
+      SPY: 'S&P 500 ETF',
+      NVDA: 'NVIDIA Corporation',
+      MSFT: 'Microsoft Corporation',
+      AAPL: 'Apple Inc.',
+      GOOGL: 'Alphabet Inc.',
+      AMZN: 'Amazon.com Inc.',
+      META: 'Meta Platforms Inc.',
+      AVGO: 'Broadcom Inc.',
+      TSLA: 'Tesla Inc.',
+      ORCL: 'Oracle Corporation'
+    };
+    
+    return topTickers.map(ticker => ({
+      ticker,
+      name: stockNames[ticker] || ticker,
+      price: prices[ticker]?.price || null,
+      updated: prices[ticker]?.updated || null
+    }));
+  }
+
   // GET /finanzas/stock-prices -> obtener precios de acciones (cacheados 24h)
   @Get('stock-prices')
   @UseGuards(JwtAuthGuard)
