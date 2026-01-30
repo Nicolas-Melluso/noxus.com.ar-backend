@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { FinanzasModule } from './finanzas/finanzas.module';
+import { FixusModule } from './fixus/fixus.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FinanzasModule } from './finanzas/finanzas.module';
     UsersModule,
     EventsModule,
     FinanzasModule,
+    FixusModule,
   ],
   controllers: [],
   providers: [AppService],
