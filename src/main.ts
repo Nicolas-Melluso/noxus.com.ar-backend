@@ -5,6 +5,12 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Middleware para asegurar UTF-8 en todas las respuestas
+  app.use((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    next();
+  });
+
   // Habilitar CORS abierto para permitir peticiones desde los microfrontends
   // Nota: configurado con origin: '*' y sin credenciales (no usar cookies)
   app.enableCors({
@@ -22,6 +28,7 @@ async function bootstrap() {
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, PATCH, DELETE, HEAD');
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Content-Type', 'application/json; charset=utf-8');
       return res.sendStatus(200);
     }
     next();

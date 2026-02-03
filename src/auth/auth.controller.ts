@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
@@ -54,20 +54,23 @@ export class AuthController {
     // Guardar o actualizar usuario en la base de datos
     let dbUser = await this.usersService.findByEmail(user.email);
     if (!dbUser) {
+      // Asegurar que el nombre está en UTF-8 correcto
+      const name = user.name ? Buffer.from(user.name, 'utf8').toString('utf8') : 'Google User';
       dbUser = await this.usersService.create({
         email: user.email,
-        name: user.name,
+        name: name,
         password: Math.random().toString(36).slice(-8), // random, no se usa
         role: 'socio',
       });
     } else {
       // Actualizar nombre si cambió
       if (dbUser.name !== user.name) {
-        dbUser.name = user.name;
+        const name = user.name ? Buffer.from(user.name, 'utf8').toString('utf8') : dbUser.name;
+        dbUser.name = name;
         await this.usersService.updateUser(dbUser); // Usar método público
       }
     }
-    // Generar JWT con email, name y id
+    // Generar JWT con email, name y id - el nombre debe estar en UTF-8
     const payload = { email: dbUser.email, name: dbUser.name, id: dbUser.id };
     const token = this.jwtService.sign(payload);
     const frontendUrl = process.env.FRONTEND_URL || 'https://noxus.com.ar';
