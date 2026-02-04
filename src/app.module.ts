@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { FinanzasModule } from './finanzas/finanzas.module';
 import { FixusModule } from './fixus/fixus.module';
+import { NoxuraModule } from './noxura/noxura.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FixusModule } from './fixus/fixus.module';
     EventsModule,
     FinanzasModule,
     FixusModule,
+    NoxuraModule,
   ],
   controllers: [],
   providers: [AppService],
