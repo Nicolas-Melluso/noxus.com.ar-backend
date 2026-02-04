@@ -78,6 +78,11 @@ export class NoxuraService {
     return this.dailyMealRepository.save(dailyMeal);
   }
 
+  async deleteDailyMeal(date: string, userId: number) {
+    await this.dailyMealRepository.delete({ date, userId });
+    return { success: true };
+  }
+
   async validateDailyMeal(date: string, userId: number, validatorId: number) {
     const meal = await this.getDailyMeal(date, userId);
     if (!meal) {

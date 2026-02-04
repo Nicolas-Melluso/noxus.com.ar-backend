@@ -45,12 +45,26 @@ export class NoxuraController {
 
   @Get('meals/:date')
   async getDailyMeal(@Request() req, @Param('date') date: string) {
-    return this.noxuraService.getDailyMeal(date, req.user.userId);
+    const meal = await this.noxuraService.getDailyMeal(date, req.user.userId);
+    if (!meal) {
+      return { meals: [], date, totalCalories: 0, validated: false };
+    }
+    return meal;
   }
 
   @Post('meals')
   async saveDailyMeal(@Request() req, @Body() data: { date: string; meals: any[] }) {
     return this.noxuraService.saveDailyMeal(req.user.userId, data.date, data.meals);
+  }
+
+  @Put('meals/:date')
+  async updateDailyMeal(@Request() req, @Param('date') date: string, @Body() data: { meals: any[] }) {
+    return this.noxuraService.saveDailyMeal(req.user.userId, date, data.meals);
+  }
+
+  @Delete('meals/:date')
+  async deleteDailyMeal(@Request() req, @Param('date') date: string) {
+    return this.noxuraService.deleteDailyMeal(date, req.user.userId);
   }
 
   @Post('meals/:date/validate')
