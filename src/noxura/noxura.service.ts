@@ -59,6 +59,41 @@ export class NoxuraService {
     return this.dailyMealRepository.findOne({ where: { date, userId } });
   }
 
+  async getMonthlyMeals(userId: number, month: number, year: number) {
+    // month es 0-11 (como en JavaScript), convertir a 1-12 para SQL
+    const monthNum = month + 1;
+    const monthStr = String(monthNum).padStart(2, '0');
+    const yearStr = String(year);
+    const datePrefix = `${yearStr}-${monthStr}`;
+
+    const meals = await this.dailyMealRepository.find({
+      where: {
+        userId,
+      },
+    });
+
+    // Filtrar por mes (más eficiente en memoria que en SQL con LIKE)
+    const monthlyMeals = meals.filter(meal => 
+      meal.date.startsWith(datePrefix)
+    );
+
+    // Convertir a objeto indexado por fecha
+    const result: Record<string, any> = {};
+    monthlyMeals.forEach(meal => {
+      result[meal.date] = {
+        meals: meal.meals || [],
+        totalCalories: meal.totalCalories || 0,
+        validated: meal.validated || false
+      };
+    });
+
+    return {
+      month,
+      year,
+      dailyMeals: result,
+    };
+  }
+
   async saveDailyMeal(userId: number, date: string, meals: any[]) {
     const totalCalories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
     

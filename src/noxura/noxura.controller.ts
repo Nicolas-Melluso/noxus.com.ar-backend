@@ -52,6 +52,15 @@ export class NoxuraController {
     return meal;
   }
 
+  @Get('meals/monthly/:year/:month')
+  async getMonthlyMeals(
+    @Request() req,
+    @Param('year') year: number,
+    @Param('month') month: number,
+  ) {
+    return this.noxuraService.getMonthlyMeals(req.user.userId, month, year);
+  }
+
   @Post('meals')
   async saveDailyMeal(@Request() req, @Body() data: { date: string; meals: any[] }) {
     return this.noxuraService.saveDailyMeal(req.user.userId, data.date, data.meals);
