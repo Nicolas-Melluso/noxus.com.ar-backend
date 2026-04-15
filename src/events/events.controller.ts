@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Query,
-  Body,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
@@ -19,14 +11,17 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Get('events')
-  getEvents(@Query('year') year: number, @Query('month') month: number) {
+  getEvents(
+    @Query('year') year: number,
+    @Query('month') month: number
+  ) {
     return this.eventsService.getEventsByMonth(year, month);
   }
 
   @Post('events')
   @Roles('admin', 'entrenador')
-  createEvent(@Body() eventData: Partial<Event>, @Req() req: any) {
+  createEvent(@Body() eventData: Partial<Event>,  @Req() req: any) {
     const creatorId = req.user.userId;
-    return this.eventsService.create({ ...eventData, creatorId });
+    return this.eventsService.create({ ...eventData, creatorId});
   }
 }

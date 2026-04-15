@@ -4,7 +4,7 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  
   // Middleware para asegurar UTF-8 en todas las respuestas
   app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -17,19 +17,16 @@ async function bootstrap() {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
-    credentials: false,
+    credentials: false
   });
 
   app.setGlobalPrefix('api');
-
+  
   // Responder OPTIONS de forma genérica (no se añadirá header de credenciales)
   app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
       res.header('Access-Control-Allow-Origin', '*');
-      res.header(
-        'Access-Control-Allow-Methods',
-        'POST, GET, OPTIONS, PUT, PATCH, DELETE, HEAD',
-      );
+      res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, PATCH, DELETE, HEAD');
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       res.header('Content-Type', 'application/json; charset=utf-8');
       return res.sendStatus(200);

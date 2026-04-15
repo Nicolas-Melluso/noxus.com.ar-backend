@@ -42,8 +42,7 @@ export class NoxuraService {
 
   // ====== DAILY MEALS ======
   async getDailyMeals(userId: number, startDate?: string, endDate?: string) {
-    const query = this.dailyMealRepository
-      .createQueryBuilder('meal')
+    const query = this.dailyMealRepository.createQueryBuilder('meal')
       .where('meal.userId = :userId', { userId });
 
     if (startDate) {
@@ -74,17 +73,17 @@ export class NoxuraService {
     });
 
     // Filtrar por mes (más eficiente en memoria que en SQL con LIKE)
-    const monthlyMeals = meals.filter((meal) =>
-      meal.date.startsWith(datePrefix),
+    const monthlyMeals = meals.filter(meal => 
+      meal.date.startsWith(datePrefix)
     );
 
     // Convertir a objeto indexado por fecha
     const result: Record<string, any> = {};
-    monthlyMeals.forEach((meal) => {
+    monthlyMeals.forEach(meal => {
       result[meal.date] = {
         meals: meal.meals || [],
         totalCalories: meal.totalCalories || 0,
-        validated: meal.validated || false,
+        validated: meal.validated || false
       };
     });
 
@@ -96,11 +95,8 @@ export class NoxuraService {
   }
 
   async saveDailyMeal(userId: number, date: string, meals: any[]) {
-    const totalCalories = meals.reduce(
-      (sum, meal) => sum + (meal.calories || 0),
-      0,
-    );
-
+    const totalCalories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    
     const existing = await this.getDailyMeal(date, userId);
     if (existing) {
       existing.meals = meals;
@@ -131,10 +127,10 @@ export class NoxuraService {
     meal.validated = true;
     meal.validatedBy = validatorId;
     meal.validatedAt = new Date();
-
+    
     // Actualizar perfil del usuario (agregar puntos)
     await this.addPoints(userId, 10);
-
+    
     // Actualizar contador de validaciones del validador
     const validatorProfile = await this.getOrCreateProfile(validatorId);
     validatorProfile.validationsGiven++;
@@ -149,10 +145,8 @@ export class NoxuraService {
   }
 
   async getOrCreateProfile(userId: number) {
-    let profile = await this.userProfileRepository.findOne({
-      where: { userId },
-    });
-
+    let profile = await this.userProfileRepository.findOne({ where: { userId } });
+    
     if (!profile) {
       profile = this.userProfileRepository.create({
         userId,
@@ -175,10 +169,10 @@ export class NoxuraService {
   async addPoints(userId: number, points: number) {
     const profile = await this.getOrCreateProfile(userId);
     profile.points += points;
-
+    
     // Actualizar liga basado en puntos
     profile.league = this.calculateLeague(profile.points);
-
+    
     return this.userProfileRepository.save(profile);
   }
 
@@ -202,9 +196,7 @@ export class NoxuraService {
   async updateConsecutiveDays(userId: number) {
     const profile = await this.getOrCreateProfile(userId);
     const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     if (profile.lastLoginDate === yesterday) {
       profile.consecutiveDays++;

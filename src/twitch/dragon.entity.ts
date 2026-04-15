@@ -16,14 +16,7 @@ export class Dragon {
   }
 
   private generateName(): string {
-    const prefixes = [
-      'Aurora',
-      'Vortex',
-      'Ignis',
-      'Zephyr',
-      'Lunar',
-      'Solaris',
-    ];
+    const prefixes = ['Aurora', 'Vortex', 'Ignis', 'Zephyr', 'Lunar', 'Solaris'];
     const suffixes = ['Gore', 'Raxton', 'Thalass', 'Vyrn', 'Norelia', 'Zyphra'];
     const number = Math.floor(Math.random() * 1000);
     return `${this.randomElement(prefixes)}${this.randomElement(suffixes)}${number}`;
@@ -34,19 +27,8 @@ export class Dragon {
   }
 
   private generateTraits(): { personality: string; ability: string } {
-    const personalities = [
-      'Valiente',
-      'Juguetón',
-      'Sabio',
-      'Travieso',
-      'Noble',
-    ];
-    const abilities = [
-      'Volar alto',
-      'Escupir fuego',
-      'Controlar el clima',
-      'Respirar bajo el agua',
-    ];
+    const personalities = ['Valiente', 'Juguetón', 'Sabio', 'Travieso', 'Noble'];
+    const abilities = ['Volar alto', 'Escupir fuego', 'Controlar el clima', 'Respirar bajo el agua'];
     return {
       personality: this.randomElement(personalities),
       ability: this.randomElement(abilities),
@@ -66,7 +48,7 @@ export class Dragon {
     ];
 
     let accumulatedProbability = 0;
-    const selectedRarity = rarities.find((r) => {
+    const selectedRarity = rarities.find(r => {
       accumulatedProbability += r.probability;
       return Math.random() < accumulatedProbability;
     });

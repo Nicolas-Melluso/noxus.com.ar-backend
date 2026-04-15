@@ -7,7 +7,9 @@ import { DailyMeal } from './entities/daily-meal.entity';
 import { UserProfile } from './entities/user-profile.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Recipe, DailyMeal, UserProfile])],
+  imports: [
+    TypeOrmModule.forFeature([Recipe, DailyMeal, UserProfile]),
+  ],
   controllers: [NoxuraController],
   providers: [NoxuraService],
   exports: [NoxuraService],

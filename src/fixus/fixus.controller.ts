@@ -39,16 +39,8 @@ export class FixusController {
 
   @Put('routines/:id')
   @UseGuards(JwtAuthGuard)
-  async updateRoutine(
-    @Request() req,
-    @Param('id') id: string,
-    @Body() updateRoutineDto: any,
-  ) {
-    return await this.fixusService.updateRoutine(
-      req.user.id,
-      parseInt(id),
-      updateRoutineDto,
-    );
+  async updateRoutine(@Request() req, @Param('id') id: string, @Body() updateRoutineDto: any) {
+    return await this.fixusService.updateRoutine(req.user.id, parseInt(id), updateRoutineDto);
   }
 
   @Delete('routines/:id')
@@ -60,10 +52,7 @@ export class FixusController {
 
   @Get('routines/person/:personId')
   @UseGuards(JwtAuthGuard)
-  async getRoutinesByPerson(
-    @Request() req,
-    @Param('personId') personId: string,
-  ) {
+  async getRoutinesByPerson(@Request() req, @Param('personId') personId: string) {
     return await this.fixusService.getRoutinesByPerson(req.user.id, personId);
   }
 
@@ -89,16 +78,8 @@ export class FixusController {
 
   @Put('persons/:id')
   @UseGuards(JwtAuthGuard)
-  async updatePerson(
-    @Request() req,
-    @Param('id') id: string,
-    @Body() updatePersonDto: any,
-  ) {
-    return await this.fixusService.updatePerson(
-      req.user.id,
-      parseInt(id),
-      updatePersonDto,
-    );
+  async updatePerson(@Request() req, @Param('id') id: string, @Body() updatePersonDto: any) {
+    return await this.fixusService.updatePerson(req.user.id, parseInt(id), updatePersonDto);
   }
 
   @Delete('persons/:id')
@@ -127,10 +108,7 @@ export class FixusController {
   @Post('trainer-requests')
   @UseGuards(JwtAuthGuard)
   async createTrainerRequest(@Request() req, @Body() createRequestDto: any) {
-    return await this.fixusService.createTrainerRequest(
-      req.user.id,
-      createRequestDto,
-    );
+    return await this.fixusService.createTrainerRequest(req.user.id, createRequestDto);
   }
 
   @Get('trainer-requests')
@@ -141,10 +119,7 @@ export class FixusController {
   @Post('trainer-requests/:id/accept')
   @UseGuards(JwtAuthGuard)
   async acceptTrainerRequest(@Request() req, @Param('id') id: string) {
-    return await this.fixusService.acceptTrainerRequest(
-      parseInt(id),
-      req.user.id,
-    );
+    return await this.fixusService.acceptTrainerRequest(parseInt(id), req.user.id);
   }
 
   @Post('trainer-requests/:id/reject')
@@ -169,9 +144,6 @@ export class FixusController {
     @Param('id') id: string,
     @Body() body: { routines: any[] },
   ) {
-    return await this.fixusService.updateLinkedTrainerRoutines(
-      parseInt(id),
-      body.routines,
-    );
+    return await this.fixusService.updateLinkedTrainerRoutines(parseInt(id), body.routines);
   }
 }

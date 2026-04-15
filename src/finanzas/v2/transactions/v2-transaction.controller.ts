@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { V2TransactionService } from './v2-transaction.service';
 
@@ -34,30 +24,14 @@ export class V2TransactionController {
   @UseGuards(JwtAuthGuard)
   async saveTransactions(@Request() req, @Body() transactions: any[]) {
     console.log('[BACKEND] POST bulk transacciones', req.user.id, transactions);
-    return this.v2TransactionService.saveUserTransactions(
-      req.user.id,
-      transactions,
-    );
+    return this.v2TransactionService.saveUserTransactions(req.user.id, transactions);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
-  async updateTransaction(
-    @Request() req,
-    @Param('id') id: number,
-    @Body() updates: any,
-  ) {
-    console.log(
-      '[BACKEND] PUT actualizar transacción',
-      req.user.id,
-      id,
-      updates,
-    );
-    return this.v2TransactionService.updateUserTransaction(
-      req.user.id,
-      id,
-      updates,
-    );
+  async updateTransaction(@Request() req, @Param('id') id: number, @Body() updates: any) {
+    console.log('[BACKEND] PUT actualizar transacción', req.user.id, id, updates);
+    return this.v2TransactionService.updateUserTransaction(req.user.id, id, updates);
   }
 
   @Delete(':id')

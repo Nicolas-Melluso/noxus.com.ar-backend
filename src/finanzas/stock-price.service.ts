@@ -22,7 +22,7 @@ export class StockPriceService {
   private readonly apiKey = 'mOp0KC6davHzlfe0EFhqAlHBa2wB8iZl0hKea5o1';
   private readonly apiUrl = 'https://api.api-ninjas.com/v1/stockprice';
   private readonly cacheLifetime = 24 * 60 * 60 * 1000; // 24 horas en ms
-
+  
   // Caché en memoria (en producción considerar Redis)
   private priceCache: Map<string, StockPriceCache> = new Map();
 
@@ -33,7 +33,7 @@ export class StockPriceService {
    */
   async getStockPrice(ticker: string): Promise<StockPriceResponse | null> {
     const upperTicker = ticker.toUpperCase();
-
+    
     // Verificar si está en caché y no expiró
     const cached = this.priceCache.get(upperTicker);
     if (cached && this.isCacheValid(cached.fetchedAt)) {
@@ -56,7 +56,7 @@ export class StockPriceService {
       });
 
       const data = response.data;
-
+      
       // Guardar en caché
       this.priceCache.set(upperTicker, {
         price: data.price,
@@ -66,7 +66,7 @@ export class StockPriceService {
       });
 
       this.logger.log(`[Stock Price] ${upperTicker} cached: $${data.price}`);
-
+      
       return {
         ticker: upperTicker,
         price: data.price,
@@ -74,10 +74,7 @@ export class StockPriceService {
         updated: data.updated,
       };
     } catch (error) {
-      this.logger.error(
-        `[Stock Price] Error fetching ${upperTicker}:`,
-        error.message,
-      );
+      this.logger.error(`[Stock Price] Error fetching ${upperTicker}:`, error.message);
       return null;
     }
   }
@@ -85,11 +82,9 @@ export class StockPriceService {
   /**
    * Obtiene precios de múltiples tickers (batch)
    */
-  async getStockPrices(
-    tickers: string[],
-  ): Promise<Record<string, StockPriceResponse | null>> {
+  async getStockPrices(tickers: string[]): Promise<Record<string, StockPriceResponse | null>> {
     const results: Record<string, StockPriceResponse | null> = {};
-
+    
     // Procesar secuencialmente para evitar rate limits
     for (const ticker of tickers) {
       results[ticker.toUpperCase()] = await this.getStockPrice(ticker);
@@ -98,7 +93,7 @@ export class StockPriceService {
         await this.delay(100);
       }
     }
-
+    
     return results;
   }
 
@@ -107,9 +102,7 @@ export class StockPriceService {
    */
   invalidateCache(ticker: string): void {
     this.priceCache.delete(ticker.toUpperCase());
-    this.logger.log(
-      `[Stock Price] Cache invalidated for ${ticker.toUpperCase()}`,
-    );
+    this.logger.log(`[Stock Price] Cache invalidated for ${ticker.toUpperCase()}`);
   }
 
   /**

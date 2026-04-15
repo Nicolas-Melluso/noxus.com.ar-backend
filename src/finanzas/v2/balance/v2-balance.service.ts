@@ -19,10 +19,7 @@ export class V2BalanceService {
     return balance;
   }
 
-  async setUserBalance(
-    userId: number,
-    data: Partial<V2Balance>,
-  ): Promise<V2Balance> {
+  async setUserBalance(userId: number, data: Partial<V2Balance>): Promise<V2Balance> {
     let balance = await this.v2BalanceRepo.findOne({ where: { userId } });
     if (!balance) {
       balance = this.v2BalanceRepo.create({ userId, ...data });

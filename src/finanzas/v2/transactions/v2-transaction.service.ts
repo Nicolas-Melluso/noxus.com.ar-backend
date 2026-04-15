@@ -19,86 +19,52 @@ export class V2TransactionService {
     return this.v2TransactionRepo.find({ where: { userId, deleted: false } });
   }
 
-  async saveUserTransactions(
-    userId: number,
-    transactions: Partial<V2Transaction>[],
-  ): Promise<any> {
+  async saveUserTransactions(userId: number, transactions: Partial<V2Transaction>[]): Promise<any> {
     // Soft delete previas
-    await this.v2TransactionRepo.update(
-      { userId, deleted: false },
-      { deleted: true },
-    );
+    await this.v2TransactionRepo.update({ userId, deleted: false }, { deleted: true });
     // Insertar nuevas
-    const txs = transactions.map((t) => ({ ...t, userId, deleted: false }));
+    const txs = transactions.map(t => ({ ...t, userId, deleted: false }));
     await this.v2TransactionRepo.save(txs);
 
     // Recalcular balance
     // Sumar ingresos, egresos y deudas por moneda
     const balanceData = {
-      usd_ingresos: 0,
-      usd_egresos: 0,
-      usd_deudas: 0,
-      ars_ingresos: 0,
-      ars_egresos: 0,
-      ars_deudas: 0,
-      eur_ingresos: 0,
-      eur_egresos: 0,
-      eur_deudas: 0,
+      usd_ingresos: 0, usd_egresos: 0, usd_deudas: 0,
+      ars_ingresos: 0, ars_egresos: 0, ars_deudas: 0,
+      eur_ingresos: 0, eur_egresos: 0, eur_deudas: 0
     };
     for (const tx of txs) {
       const { amount = 0, type, currency = 'ARS' } = tx;
-      if (type === 'income')
-        balanceData[`${currency.toLowerCase()}_ingresos`] += Number(amount);
-      else if (type === 'expense')
-        balanceData[`${currency.toLowerCase()}_egresos`] += Number(amount);
-      else if (type === 'debt')
-        balanceData[`${currency.toLowerCase()}_deudas`] += Number(amount);
+      if (type === 'income') balanceData[`${currency.toLowerCase()}_ingresos`] += Number(amount);
+      else if (type === 'expense') balanceData[`${currency.toLowerCase()}_egresos`] += Number(amount);
+      else if (type === 'debt') balanceData[`${currency.toLowerCase()}_deudas`] += Number(amount);
     }
     await this.v2BalanceService.setUserBalance(userId, balanceData);
 
     return { saved: txs.length };
   }
 
-  async createUserTransaction(
-    userId: number,
-    tx: Partial<V2Transaction>,
-  ): Promise<V2Transaction> {
+  async createUserTransaction(userId: number, tx: Partial<V2Transaction>): Promise<V2Transaction> {
     console.log('[BACKEND] SERVICE crear transacción', userId, tx);
     if ('id' in tx) delete tx.id;
     const plainTx = { ...tx, userId, deleted: false };
     console.log('[BACKEND] OBJETO A INSERTAR:', JSON.stringify(plainTx));
     const insertResult = await this.v2TransactionRepo.insert(plainTx);
     const newId = insertResult.identifiers[0]?.id;
-    const nuevaTx = await this.v2TransactionRepo.findOne({
-      where: { id: newId },
-    });
+    const nuevaTx = await this.v2TransactionRepo.findOne({ where: { id: newId } });
     await this.recalculateBalance(userId);
     return nuevaTx;
   }
 
-  async updateUserTransaction(
-    userId: number,
-    id: number,
-    updates: Partial<V2Transaction>,
-  ): Promise<V2Transaction> {
-    console.log(
-      '[BACKEND] SERVICE actualizar transacción',
-      userId,
-      id,
-      updates,
-    );
+  async updateUserTransaction(userId: number, id: number, updates: Partial<V2Transaction>): Promise<V2Transaction> {
+    console.log('[BACKEND] SERVICE actualizar transacción', userId, id, updates);
     await this.v2TransactionRepo.update({ id, userId }, updates);
-    const updatedTx = await this.v2TransactionRepo.findOne({
-      where: { id, userId },
-    });
+    const updatedTx = await this.v2TransactionRepo.findOne({ where: { id, userId } });
     await this.recalculateBalance(userId);
     return updatedTx;
   }
 
-  async deleteUserTransaction(
-    userId: number,
-    id: number,
-  ): Promise<{ success: boolean }> {
+  async deleteUserTransaction(userId: number, id: number): Promise<{ success: boolean }> {
     console.log('[BACKEND] SERVICE eliminar transacción', userId, id);
     await this.v2TransactionRepo.update({ id, userId }, { deleted: true });
     await this.recalculateBalance(userId);
@@ -111,30 +77,20 @@ export class V2TransactionService {
   }
 
   private async recalculateBalance(userId: number) {
-    const txs = await this.v2TransactionRepo.find({
-      where: { userId, deleted: false },
-    });
+    const txs = await this.v2TransactionRepo.find({ where: { userId, deleted: false } });
     const balanceData = {
-      usd_ingresos: 0,
-      usd_egresos: 0,
-      usd_deudas: 0,
-      ars_ingresos: 0,
-      ars_egresos: 0,
-      ars_deudas: 0,
-      eur_ingresos: 0,
-      eur_egresos: 0,
-      eur_deudas: 0,
+      usd_ingresos: 0, usd_egresos: 0, usd_deudas: 0,
+      ars_ingresos: 0, ars_egresos: 0, ars_deudas: 0,
+      eur_ingresos: 0, eur_egresos: 0, eur_deudas: 0
     };
-
+    
     // Sumar transacciones (income, expense)
     for (const tx of txs) {
       const { amount = 0, type, currency = 'ARS' } = tx;
-      if (type === 'income')
-        balanceData[`${currency.toLowerCase()}_ingresos`] += Number(amount);
-      else if (type === 'expense')
-        balanceData[`${currency.toLowerCase()}_egresos`] += Number(amount);
+      if (type === 'income') balanceData[`${currency.toLowerCase()}_ingresos`] += Number(amount);
+      else if (type === 'expense') balanceData[`${currency.toLowerCase()}_egresos`] += Number(amount);
     }
-
+    
     // Calcular deudas pendientes desde la tabla debts
     const debts = await this.debtRepo.find({ where: { userId } });
     for (const debt of debts) {
@@ -145,7 +101,7 @@ export class V2TransactionService {
         balanceData[`${currency.toLowerCase()}_deudas`] += pending;
       }
     }
-
+    
     await this.v2BalanceService.setUserBalance(userId, balanceData);
   }
 }

@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { NoxuraService } from './noxura.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -35,11 +24,7 @@ export class NoxuraController {
   }
 
   @Put('recipes/:id')
-  async updateRecipe(
-    @Request() req,
-    @Param('id') id: number,
-    @Body() data: any,
-  ) {
+  async updateRecipe(@Request() req, @Param('id') id: number, @Body() data: any) {
     return this.noxuraService.updateRecipe(id, req.user.userId, data);
   }
 
@@ -55,11 +40,7 @@ export class NoxuraController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.noxuraService.getDailyMeals(
-      req.user.userId,
-      startDate,
-      endDate,
-    );
+    return this.noxuraService.getDailyMeals(req.user.userId, startDate, endDate);
   }
 
   @Get('meals/:date')
@@ -81,23 +62,12 @@ export class NoxuraController {
   }
 
   @Post('meals')
-  async saveDailyMeal(
-    @Request() req,
-    @Body() data: { date: string; meals: any[] },
-  ) {
-    return this.noxuraService.saveDailyMeal(
-      req.user.userId,
-      data.date,
-      data.meals,
-    );
+  async saveDailyMeal(@Request() req, @Body() data: { date: string; meals: any[] }) {
+    return this.noxuraService.saveDailyMeal(req.user.userId, data.date, data.meals);
   }
 
   @Put('meals/:date')
-  async updateDailyMeal(
-    @Request() req,
-    @Param('date') date: string,
-    @Body() data: { meals: any[] },
-  ) {
+  async updateDailyMeal(@Request() req, @Param('date') date: string, @Body() data: { meals: any[] }) {
     return this.noxuraService.saveDailyMeal(req.user.userId, date, data.meals);
   }
 
@@ -107,16 +77,8 @@ export class NoxuraController {
   }
 
   @Post('meals/:date/validate')
-  async validateMeal(
-    @Request() req,
-    @Param('date') date: string,
-    @Body() data: { userId: number },
-  ) {
-    return this.noxuraService.validateDailyMeal(
-      date,
-      data.userId,
-      req.user.userId,
-    );
+  async validateMeal(@Request() req, @Param('date') date: string, @Body() data: { userId: number }) {
+    return this.noxuraService.validateDailyMeal(date, data.userId, req.user.userId);
   }
 
   // ====== USER PROFILE ======
