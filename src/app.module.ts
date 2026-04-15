@@ -9,19 +9,23 @@ import { EventsModule } from './events/events.module';
 import { FinanzasModule } from './finanzas/finanzas.module';
 import { FixusModule } from './fixus/fixus.module';
 import { NoxuraModule } from './noxura/noxura.module';
+import { validateEnv } from './config/env';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateEnv,
+    }),
     TypeOrmModule.forRoot({
-    type: 'mysql',
-    host: process.env.H_HOST,
-    port: 3306,
-    username: process.env.H_USER,
-    password: process.env.H_PASS,
-    database: process.env.H_DB_NAME,
-    entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: false,
+      type: 'mysql',
+      host: process.env.H_HOST,
+      port: Number(process.env.H_PORT),
+      username: process.env.H_USER,
+      password: process.env.H_PASS,
+      database: process.env.H_DB_NAME,
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: false,
     }),
     TwitchModule,
     AuthModule,

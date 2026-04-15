@@ -32,6 +32,26 @@
 $ npm install
 ```
 
+## Environment variables
+
+The application validates environment variables at startup.  
+Copy `.env.example` to `.env` and complete all values before running the app:
+
+```bash
+cp .env.example .env
+```
+
+Required values are validated with clear startup errors (database, auth and Twitch settings).  
+Optional values have defaults:
+
+- `NODE_ENV=development`
+- `PORT=3000`
+- `H_PORT=3306`
+- `FRONTEND_URL=https://noxus.com.ar`
+- `OAUTH2_CALLBACK_URL=http://localhost:3000/api/auth/oauth2/callback`
+- `OAUTH2_AUTH_URL=https://example.com/oauth2/authorize`
+- `OAUTH2_TOKEN_URL=https://example.com/oauth2/token`
+
 ## Compile and run the project
 
 ```bash

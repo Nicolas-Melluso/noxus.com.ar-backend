@@ -10,7 +10,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule,
     UsersModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
