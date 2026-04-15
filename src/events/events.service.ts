@@ -7,17 +7,17 @@ import { Event } from './event.entity';
 export class EventsService {
   constructor(
     @InjectRepository(Event)
-    private readonly eventRepository: Repository<Event>
+    private readonly eventRepository: Repository<Event>,
   ) {}
 
   async getEventsByMonth(year: number, month: number) {
     const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
     const lastDay = `${year}-${String(month).padStart(2, '0')}-31`;
-    
+
     return await this.eventRepository.find({
       where: {
-        date: Between(firstDay, lastDay)
-      }
+        date: Between(firstDay, lastDay),
+      },
     });
   }
 

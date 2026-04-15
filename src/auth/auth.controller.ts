@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
@@ -9,11 +17,14 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
   ) {}
 
   @Post('login')
-  async login(@Body('email') email: string, @Body('password') password: string) {
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
     const user = await this.authService.validateUser(email, password);
     return this.authService.login(user);
   }
@@ -22,15 +33,13 @@ export class AuthController {
   async register(
     @Body('name') name: string,
     @Body('email') email: string,
-    @Body('password') password: string
+    @Body('password') password: string,
   ) {
     return this.authService.register(name, email, password);
   }
 
   @Post('refresh-token')
-  async refreshToken(
-    @Body('refreshToken') refreshToken: string
-  ) {
+  async refreshToken(@Body('refreshToken') refreshToken: string) {
     return await this.authService.refresh(refreshToken);
   }
 
@@ -55,7 +64,9 @@ export class AuthController {
     let dbUser = await this.usersService.findByEmail(user.email);
     if (!dbUser) {
       // Asegurar que el nombre está en UTF-8 correcto
-      const name = user.name ? Buffer.from(user.name, 'utf8').toString('utf8') : 'Google User';
+      const name = user.name
+        ? Buffer.from(user.name, 'utf8').toString('utf8')
+        : 'Google User';
       dbUser = await this.usersService.create({
         email: user.email,
         name: name,
@@ -65,7 +76,9 @@ export class AuthController {
     } else {
       // Actualizar nombre si cambió
       if (dbUser.name !== user.name) {
-        const name = user.name ? Buffer.from(user.name, 'utf8').toString('utf8') : dbUser.name;
+        const name = user.name
+          ? Buffer.from(user.name, 'utf8').toString('utf8')
+          : dbUser.name;
         dbUser.name = name;
         await this.usersService.updateUser(dbUser); // Usar método público
       }

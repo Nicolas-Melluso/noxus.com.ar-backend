@@ -17,12 +17,12 @@ export class TwitchApiService {
   private refreshToken: string;
   private broadcasterRefreshToken: string;
   private readonly webhookSecret: string;
-  private callbackUrl: string = "https://api.noxus.com.ar/twitch/events";
+  private callbackUrl: string = 'https://api.noxus.com.ar/twitch/events';
 
   constructor(
     private readonly httpService: HttpService,
     @Inject(forwardRef(() => TwitchUsersService))
-    private tw: TwitchUsersService
+    private tw: TwitchUsersService,
   ) {
     this.clientId = process.env.TWITCH_CLIENT_ID;
     this.clientSecret = process.env.TWITCH_CLIENT_SECRET;
@@ -31,7 +31,9 @@ export class TwitchApiService {
     this.refreshToken = process.env.TWITCH_BOT_REFRESH_TOKEN;
 
     if (!this.webhookSecret) {
-      throw new Error('TWITCH_WEBHOOK_SECRET no está definido en las variables de entorno');
+      throw new Error(
+        'TWITCH_WEBHOOK_SECRET no está definido en las variables de entorno',
+      );
     }
   }
 
@@ -40,17 +42,17 @@ export class TwitchApiService {
     const messageSignature = headers['twitch-eventsub-message-signature'];
     const messageId = headers['twitch-eventsub-message-id'];
     const timestamp = headers['twitch-eventsub-message-timestamp'];
-  
+
     if (!messageSignature || !messageId || !timestamp) {
       console.warn('Faltan headers requeridos para verificar el evento');
       return false;
     }
-  
+
     try {
       const hmac = crypto.createHmac('sha256', this.webhookSecret);
       const message = `${messageId}${timestamp}${JSON.stringify(body)}`;
       const digest = `sha256=${hmac.update(message).digest('hex')}`;
-      
+
       return crypto.timingSafeEqual(
         Buffer.from(messageSignature),
         Buffer.from(digest),
@@ -72,17 +74,17 @@ export class TwitchApiService {
       params.append('client_id', this.clientId);
       params.append('client_secret', this.clientSecret);
       params.append('grant_type', 'client_credentials');
-      
+
       const response = await firstValueFrom(
         this.httpService.post(
           'https://id.twitch.tv/oauth2/token',
           params.toString(),
           {
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }
-        )
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        ),
       );
 
       this.appAccessToken = response.data.access_token;
@@ -104,7 +106,9 @@ export class TwitchApiService {
       if (this.refreshToken) {
         return this.refreshUserToken(this.refreshToken);
       }
-      throw new Error('Necesitas iniciar el flujo OAuth para obtener un token de usuario');
+      throw new Error(
+        'Necesitas iniciar el flujo OAuth para obtener un token de usuario',
+      );
     } catch (error) {
       console.error('Error obteniendo User Token:', error);
       throw error;
@@ -125,19 +129,19 @@ export class TwitchApiService {
         params.toString(),
         {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      )
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      ),
     );
 
     this.botUserToken = response.data.access_token;
     this.botTokenExpiry = Date.now() + response.data.expires_in * 1000;
     this.refreshToken = response.data.refresh_token || this.refreshToken;
-    
+
     // Actualiza variable de entorno si es posible
     process.env.TWITCH_BOT_REFRESH_TOKEN = this.refreshToken;
-    
+
     return this.botUserToken;
   }
 
@@ -162,7 +166,6 @@ export class TwitchApiService {
 
   // Suscribe a eventos de Twitch
   async subscribeToEvent(eventType: string, broadcasterUserId: string) {
-    
     if (!broadcasterUserId || !/^\d+$/.test(broadcasterUserId)) {
       throw new Error('broadcasterUserId debe ser un número válido');
     }
@@ -172,10 +175,10 @@ export class TwitchApiService {
     const payload = {
       type: eventType,
       version: '1',
-      condition: { 
+      condition: {
         broadcaster_user_id: broadcasterUserId,
-        user_id: broadcasterUserId
-       },
+        user_id: broadcasterUserId,
+      },
       transport: {
         method: 'webhook',
         callback: this.callbackUrl,
@@ -190,20 +193,20 @@ export class TwitchApiService {
         {
           headers: {
             'Client-ID': this.clientId,
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
-    
+
     return response.data;
   }
 
   // Envía mensaje de chat usando Helix API
   async sendChatMessage(broadcasterId: string, message: string) {
     const accessToken = await this.getUserAccessToken();
-    
+
     await firstValueFrom(
       this.httpService.post(
         `https://api.twitch.tv/helix/chat/messages`,
@@ -215,21 +218,24 @@ export class TwitchApiService {
         {
           headers: {
             'Client-ID': this.clientId,
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
   }
 
   // Maneja mensajes de chat desde EventSub
   async handleChatMessage(event: any) {
-    const username = event.chatter_user_name;  // ✅ Usa event.event
-    const message = event.message.text;   // ✅ Corrige la ruta del mensaje
+    const username = event.chatter_user_name; // ✅ Usa event.event
+    const message = event.message.text; // ✅ Corrige la ruta del mensaje
 
     if (message.toLowerCase() === '!dragon') {
-      this.sendChatMessage(event.broadcaster_user_id, await this.tw.updateDragon(event));
+      this.sendChatMessage(
+        event.broadcaster_user_id,
+        await this.tw.updateDragon(event),
+      );
     }
   }
 
@@ -238,12 +244,14 @@ export class TwitchApiService {
     const clientId = this.clientId;
     const redirectUri = encodeURIComponent(process.env.TWITCH_REDIRECT_URI);
     const scope = encodeURIComponent('user:read:chat user:write:chat user:bot');
-    
-    return `https://id.twitch.tv/oauth2/authorize?` +
+
+    return (
+      `https://id.twitch.tv/oauth2/authorize?` +
       `response_type=code&` +
       `client_id=${clientId}&` +
       `redirect_uri=${redirectUri}&` +
       `scope=${scope}&` +
-      `force_verify=true`;
+      `force_verify=true`
+    );
   }
 }

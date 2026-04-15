@@ -7,12 +7,12 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(pass, user.password)) {
+    if (user && (await bcrypt.compare(pass, user.password))) {
       const { password, ...result } = user;
       return result;
     }
@@ -22,7 +22,10 @@ export class AuthService {
   async login(user: any) {
     const payload = { email: user.email, sub: user.id, role: user.role };
 
-    await this.usersService.updateRefreshToken(user.id, this.jwtService.sign(payload, { expiresIn: '7d' }));
+    await this.usersService.updateRefreshToken(
+      user.id,
+      this.jwtService.sign(payload, { expiresIn: '7d' }),
+    );
 
     return {
       accessToken: this.jwtService.sign(payload),
@@ -46,7 +49,11 @@ export class AuthService {
       password,
     });
 
-    const payload = { email: newUser.email, sub: newUser.id, role: newUser.role };
+    const payload = {
+      email: newUser.email,
+      sub: newUser.id,
+      role: newUser.role,
+    };
     return {
       accessToken: this.jwtService.sign(payload),
       refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
@@ -58,21 +65,21 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
-  try {
-    const decoded = this.jwtService.verify(refreshToken);
-    
-    const user = await this.usersService.findOne(decoded.sub);
+    try {
+      const decoded = this.jwtService.verify(refreshToken);
 
-    if (user.refreshToken !== refreshToken) {
+      const user = await this.usersService.findOne(decoded.sub);
+
+      if (user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('Refresh token inválido');
+      }
+
+      const payload = { email: user.email, sub: user.id, role: user.role };
+      return {
+        accessToken: this.jwtService.sign(payload),
+      };
+    } catch (error) {
       throw new UnauthorizedException('Refresh token inválido');
     }
-
-    const payload = { email: user.email, sub: user.id, role: user.role };
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
-  } catch (error) {
-    throw new UnauthorizedException('Refresh token inválido');
   }
-}
 }

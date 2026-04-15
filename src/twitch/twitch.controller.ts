@@ -1,5 +1,15 @@
 // src/twitch/twitch.controller.ts
-import { Controller, Post, Body, Res, Headers, Get, Query, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Headers,
+  Get,
+  Query,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { TwitchUsersService } from './twitch-users.service';
 import { TwitchApiService } from './twitch-api.service';
@@ -7,9 +17,7 @@ import { firstValueFrom } from 'rxjs';
 
 @Controller('twitch')
 export class TwitchController {
-  constructor(
-    private readonly twitchApiService: TwitchApiService,
-  ) {}
+  constructor(private readonly twitchApiService: TwitchApiService) {}
 
   /**
    * Webhook para recibir eventos de Twitch EventSub
@@ -18,18 +26,21 @@ export class TwitchController {
   async handleEventSub(
     @Body() body: any,
     @Headers() headers: any,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     try {
       // Verificar firma del evento
-      const isValid = await this.twitchApiService.verifyTwitchEvent(headers, body);
+      const isValid = await this.twitchApiService.verifyTwitchEvent(
+        headers,
+        body,
+      );
       if (!isValid) {
         console.warn('Evento con firma inválida rechazado');
         return res.status(HttpStatus.FORBIDDEN).send('Invalid signature');
       }
 
       const messageType = headers['twitch-eventsub-message-type'];
-      
+
       // Verificación de webhook
       if (messageType === 'webhook_callback_verification') {
         return res.type('text/plain').send(body.challenge);
@@ -43,7 +54,9 @@ export class TwitchController {
       return res.status(HttpStatus.OK).send('Event processed');
     } catch (error) {
       console.error('Error procesando evento:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Processing error');
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send('Processing error');
     }
   }
 
@@ -79,10 +92,7 @@ export class TwitchController {
    * Callback para OAuth
    */
   @Get('callback')
-  async handleOAuthCallback(
-    @Query('code') code: string,
-    @Res() res: Response
-  ) {
+  async handleOAuthCallback(@Query('code') code: string, @Res() res: Response) {
     if (!code) {
       throw new BadRequestException('Código de autorización requerido');
     }
@@ -101,20 +111,23 @@ export class TwitchController {
           params.toString(),
           {
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }
-        )
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        ),
       );
 
       // Guarda estos tokens en un lugar seguro
       this.twitchApiService['refreshToken'] = response.data.refresh_token;
       this.twitchApiService['botUserToken'] = response.data.access_token;
-      
+
       // Redirige con éxito
       res.redirect(`${process.env.FRONTEND_URL}/twitch-auth-success`);
     } catch (error) {
-      console.error('Error en callback OAuth:', error.response?.data || error.message);
+      console.error(
+        'Error en callback OAuth:',
+        error.response?.data || error.message,
+      );
       res.redirect(`${process.env.FRONTEND_URL}/twitch-auth-failure`);
     }
   }
@@ -125,40 +138,44 @@ export class TwitchController {
       // 1. Obtener tokens necesarios
       const appToken = await this.twitchApiService.getAppAccessToken();
       const userToken = await this.twitchApiService.getUserAccessToken();
-      
+
       // 2. Verificar si ya existe suscripción
       const existingSubs = await this.checkExistingSubscription(appToken);
-      
+
       let subscriptionResult = null;
       if (!existingSubs) {
         // 3. Suscribirse a eventos de chat
         subscriptionResult = await this.twitchApiService.subscribeToEvent(
-          'channel.chat.message', 
-          process.env.BOT_USER_ID
+          'channel.chat.message',
+          process.env.BOT_USER_ID,
         );
       }
 
       // 4. Enviar mensaje de prueba al chat
       await this.twitchApiService.sendChatMessage(
         process.env.BOT_USER_ID,
-        "✅ Bot configurado exitosamente! ¡Estoy listo para responder en el chat!"
+        '✅ Bot configurado exitosamente! ¡Estoy listo para responder en el chat!',
       );
 
       return res.status(HttpStatus.OK).json({
         status: 'success',
         tokens: {
-          appTokenExpiry: new Date(this.twitchApiService['appTokenExpiry']).toISOString(),
-          userTokenExpiry: new Date(this.twitchApiService['botTokenExpiry']).toISOString()
+          appTokenExpiry: new Date(
+            this.twitchApiService['appTokenExpiry'],
+          ).toISOString(),
+          userTokenExpiry: new Date(
+            this.twitchApiService['botTokenExpiry'],
+          ).toISOString(),
         },
         subscription: existingSubs || subscriptionResult,
-        testMessageSent: true
+        testMessageSent: true,
       });
     } catch (error) {
       console.error('Error en setup:', error.response?.data || error.message);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         status: 'error',
         message: error.message,
-        details: error.response?.data
+        details: error.response?.data,
       });
     }
   }
@@ -173,16 +190,16 @@ export class TwitchController {
         {
           headers: {
             'Client-ID': this.twitchApiService['clientId'],
-            'Authorization': `Bearer ${appToken}`,
-          }
-        }
-      )
+            Authorization: `Bearer ${appToken}`,
+          },
+        },
+      ),
     );
 
     const activeSubs = response.data.data.filter(
-      sub => 
-        sub.type === 'channel.chat.message' && 
-        sub.condition.broadcaster_user_id === process.env.BOT_USER_ID
+      (sub) =>
+        sub.type === 'channel.chat.message' &&
+        sub.condition.broadcaster_user_id === process.env.BOT_USER_ID,
     );
 
     return activeSubs[0] || null;
@@ -194,7 +211,7 @@ export class TwitchController {
   @Get('subscribe/chat')
   async subscribeToChatEvents(
     @Query('broadcasterId') broadcasterId: string,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     if (!broadcasterId) {
       throw new BadRequestException('broadcasterId requerido');
@@ -202,14 +219,14 @@ export class TwitchController {
 
     try {
       const result = await this.twitchApiService.subscribeToEvent(
-        'channel.chat.message', 
-        broadcasterId
+        'channel.chat.message',
+        broadcasterId,
       );
       res.status(HttpStatus.OK).json(result);
     } catch (error) {
       console.error('Error suscribiendo a eventos:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        error: 'No se pudo crear la suscripción'
+        error: 'No se pudo crear la suscripción',
       });
     }
   }

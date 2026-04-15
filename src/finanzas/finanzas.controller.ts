@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Param, Put, Delete, BadRequestException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Put,
+  Delete,
+  BadRequestException,
+  Query,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FinanzasService } from './finanzas.service';
 import { StockPriceService } from './stock-price.service';
@@ -100,8 +112,16 @@ export class FinanzasController {
 
   @Put('recurrings/:id')
   @UseGuards(JwtAuthGuard)
-  async updateRecurring(@Request() req, @Param('id') id: string, @Body() recurring: any) {
-    return this.finanzasService.updateRecurring(req.user.id, Number(id), recurring);
+  async updateRecurring(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() recurring: any,
+  ) {
+    return this.finanzasService.updateRecurring(
+      req.user.id,
+      Number(id),
+      recurring,
+    );
   }
 
   @Delete('recurrings/:id')
@@ -129,7 +149,11 @@ export class FinanzasController {
 
   @Put('budgets/:id')
   @UseGuards(JwtAuthGuard)
-  async updateBudget(@Request() req, @Param('id') id: string, @Body() budget: any) {
+  async updateBudget(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() budget: any,
+  ) {
     const numericId = Number(id);
     if (!Number.isInteger(numericId) || isNaN(numericId) || numericId <= 0) {
       throw new BadRequestException('Invalid id parameter');
@@ -186,7 +210,10 @@ export class FinanzasController {
   @Post('notifications')
   @UseGuards(JwtAuthGuard)
   async saveNotifications(@Request() req, @Body() notifications: any[]) {
-    return this.finanzasService.saveUserNotifications(req.user.id, notifications);
+    return this.finanzasService.saveUserNotifications(
+      req.user.id,
+      notifications,
+    );
   }
 
   // GET /finanzas/custom-keywords -> obtener custom keywords del usuario
@@ -207,9 +234,20 @@ export class FinanzasController {
   @Get('stock-prices/top')
   @UseGuards(JwtAuthGuard)
   async getTopStocks() {
-    const topTickers = ['SPY', 'NVDA', 'MSFT', 'AAPL', 'GOOGL', 'AMZN', 'META', 'AVGO', 'TSLA', 'ORCL'];
+    const topTickers = [
+      'SPY',
+      'NVDA',
+      'MSFT',
+      'AAPL',
+      'GOOGL',
+      'AMZN',
+      'META',
+      'AVGO',
+      'TSLA',
+      'ORCL',
+    ];
     const prices = await this.stockPriceService.getStockPrices(topTickers);
-    
+
     // Formatear con nombres descriptivos
     const stockNames = {
       SPY: 'S&P 500 ETF',
@@ -221,14 +259,14 @@ export class FinanzasController {
       META: 'Meta Platforms Inc.',
       AVGO: 'Broadcom Inc.',
       TSLA: 'Tesla Inc.',
-      ORCL: 'Oracle Corporation'
+      ORCL: 'Oracle Corporation',
     };
-    
-    return topTickers.map(ticker => ({
+
+    return topTickers.map((ticker) => ({
       ticker,
       name: stockNames[ticker] || ticker,
       price: prices[ticker]?.price || null,
-      updated: prices[ticker]?.updated || null
+      updated: prices[ticker]?.updated || null,
     }));
   }
 
@@ -237,9 +275,11 @@ export class FinanzasController {
   @UseGuards(JwtAuthGuard)
   async getStockPrices(@Query('tickers') tickers: string) {
     if (!tickers) {
-      throw new BadRequestException('Query parameter "tickers" is required (comma-separated)');
+      throw new BadRequestException(
+        'Query parameter "tickers" is required (comma-separated)',
+      );
     }
-    const tickerArray = tickers.split(',').map(t => t.trim());
+    const tickerArray = tickers.split(',').map((t) => t.trim());
     return this.stockPriceService.getStockPrices(tickerArray);
   }
 
@@ -249,7 +289,9 @@ export class FinanzasController {
   async getStockPrice(@Param('ticker') ticker: string) {
     const result = await this.stockPriceService.getStockPrice(ticker);
     if (!result) {
-      throw new BadRequestException(`Unable to fetch price for ticker: ${ticker}`);
+      throw new BadRequestException(
+        `Unable to fetch price for ticker: ${ticker}`,
+      );
     }
     return result;
   }

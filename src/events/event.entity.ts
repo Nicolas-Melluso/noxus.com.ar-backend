@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 
 @Entity()
@@ -15,10 +21,10 @@ export class Event {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ 
+  @Column({
     type: 'enum',
     enum: ['publico', 'privado', 'partido', 'entrenamiento'],
-    default: 'publico'
+    default: 'publico',
   })
   type: string;
 
@@ -31,6 +37,4 @@ export class Event {
 
   @Column()
   creatorId: string;
-
-  
 }

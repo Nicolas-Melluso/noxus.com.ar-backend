@@ -20,11 +20,28 @@ import { V2BalanceService } from './v2/balance/v2-balance.service';
 import { V2BalanceController } from './v2/balance/v2-balance.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    Transaction, Debt, Budget, Notification, Recurring, CustomKeyword,
-    V2Transaction, V2Balance
-  ])],
-  controllers: [FinanzasController, V2TransactionController, V2BalanceController],
-  providers: [FinanzasService, V2TransactionService, V2BalanceService, StockPriceService],
+  imports: [
+    TypeOrmModule.forFeature([
+      Transaction,
+      Debt,
+      Budget,
+      Notification,
+      Recurring,
+      CustomKeyword,
+      V2Transaction,
+      V2Balance,
+    ]),
+  ],
+  controllers: [
+    FinanzasController,
+    V2TransactionController,
+    V2BalanceController,
+  ],
+  providers: [
+    FinanzasService,
+    V2TransactionService,
+    V2BalanceService,
+    StockPriceService,
+  ],
 })
 export class FinanzasModule {}

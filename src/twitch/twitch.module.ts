@@ -16,10 +16,7 @@ import { TwitchApiService } from './twitch-api.service';
     // Entidad
     TypeOrmModule.forFeature([TwitchUser]),
   ],
-  providers: [
-    TwitchUsersService,
-    TwitchApiService,
-  ],
+  providers: [TwitchUsersService, TwitchApiService],
   controllers: [TwitchController],
 })
 export class TwitchModule {}

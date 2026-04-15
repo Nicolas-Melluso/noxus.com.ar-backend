@@ -21,9 +21,12 @@ export class UsersService {
     const cleanData: Partial<User> = {
       name: userData.name || 'Google User',
       email: userData.email,
-      password: await bcrypt.hash(userData.password || Math.random().toString(36).slice(-8), 10),
+      password: await bcrypt.hash(
+        userData.password || Math.random().toString(36).slice(-8),
+        10,
+      ),
       role: userData.role || 'socio',
-      refreshToken: userData.refreshToken || null
+      refreshToken: userData.refreshToken || null,
     };
     const user = this.userRepository.create(cleanData);
     return await this.userRepository.save(user);
@@ -49,12 +52,12 @@ export class UsersService {
   }
 
   findByRole(role: User['role']): User[] {
-    return this.users.filter(user => user.role === role);
+    return this.users.filter((user) => user.role === role);
   }
 
   assignRole(userId: string | number, role: User['role']): void {
     const numId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
-    const user = this.users.find(user => user.id === numId);
+    const user = this.users.find((user) => user.id === numId);
     if (user) {
       user.role = role;
     }

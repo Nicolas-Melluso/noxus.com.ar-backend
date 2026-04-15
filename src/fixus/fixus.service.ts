@@ -4,7 +4,10 @@ import { Repository } from 'typeorm';
 import { Routine } from './entities/routine.entity';
 import { Person } from './entities/person.entity';
 import { TrainerCode } from './entities/trainer-code.entity';
-import { TrainerRequest, RequestStatus } from './entities/trainer-request.entity';
+import {
+  TrainerRequest,
+  RequestStatus,
+} from './entities/trainer-request.entity';
 import { LinkedTrainer } from './entities/linked-trainer.entity';
 
 @Injectable()
@@ -50,7 +53,11 @@ export class FixusService {
     return routine;
   }
 
-  async updateRoutine(userId: number, routineId: number, updateDto: any): Promise<Routine> {
+  async updateRoutine(
+    userId: number,
+    routineId: number,
+    updateDto: any,
+  ): Promise<Routine> {
     const routine = await this.getRoutineById(userId, routineId);
     Object.assign(routine, updateDto);
     const saved = await this.routineRepository.save(routine);
@@ -62,7 +69,10 @@ export class FixusService {
     await this.routineRepository.remove(routine);
   }
 
-  async getRoutinesByPerson(userId: number, personId: string): Promise<Routine[]> {
+  async getRoutinesByPerson(
+    userId: number,
+    personId: string,
+  ): Promise<Routine[]> {
     return await this.routineRepository.find({
       where: { userId, personId },
       order: { date: 'DESC' },
@@ -97,7 +107,11 @@ export class FixusService {
     return person;
   }
 
-  async updatePerson(userId: number, personId: number, updateDto: any): Promise<Person> {
+  async updatePerson(
+    userId: number,
+    personId: number,
+    updateDto: any,
+  ): Promise<Person> {
     const person = await this.getPersonById(userId, personId);
     Object.assign(person, updateDto);
     const saved = await this.personRepository.save(person);
@@ -118,7 +132,8 @@ export class FixusService {
 
     if (!trainerCode) {
       // Generar código único: NDX-A1B2C3D4
-      const code = 'NDX-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+      const code =
+        'NDX-' + Math.random().toString(36).substr(2, 8).toUpperCase();
       const newCode = this.trainerCodeRepository.create({
         userId,
         code,
@@ -142,7 +157,10 @@ export class FixusService {
 
   // ===================== TRAINER REQUESTS =====================
 
-  async createTrainerRequest(trainerId: number, createRequestDto: any): Promise<TrainerRequest> {
+  async createTrainerRequest(
+    trainerId: number,
+    createRequestDto: any,
+  ): Promise<TrainerRequest> {
     const request = this.trainerRequestRepository.create({
       trainerId,
       ...createRequestDto,
@@ -151,7 +169,9 @@ export class FixusService {
     return saved as unknown as TrainerRequest;
   }
 
-  async getTrainerRequestsByEmail(clientEmail: string): Promise<TrainerRequest[]> {
+  async getTrainerRequestsByEmail(
+    clientEmail: string,
+  ): Promise<TrainerRequest[]> {
     return await this.trainerRequestRepository.find({
       where: { clientEmail, status: RequestStatus.PENDING },
       relations: ['trainer'],
@@ -169,7 +189,10 @@ export class FixusService {
     return request;
   }
 
-  async acceptTrainerRequest(requestId: number, clientId: number): Promise<LinkedTrainer> {
+  async acceptTrainerRequest(
+    requestId: number,
+    clientId: number,
+  ): Promise<LinkedTrainer> {
     const request = await this.getTrainerRequestById(requestId);
 
     // Crear relación LinkedTrainer
@@ -181,7 +204,9 @@ export class FixusService {
       trainerCode: request.trainerCode,
       routines: request.routines,
     });
-    const savedLinked = await this.linkedTrainerRepository.save(linkedTrainer) as unknown as LinkedTrainer;
+    const savedLinked = (await this.linkedTrainerRepository.save(
+      linkedTrainer,
+    )) as unknown as LinkedTrainer;
 
     // Actualizar estado de la solicitud
     request.status = RequestStatus.ACCEPTED;
@@ -198,13 +223,18 @@ export class FixusService {
 
   // ===================== LINKED TRAINERS =====================
 
-  async getLinkedTrainerByClient(clientId: number): Promise<LinkedTrainer | null> {
+  async getLinkedTrainerByClient(
+    clientId: number,
+  ): Promise<LinkedTrainer | null> {
     return await this.linkedTrainerRepository.findOne({
       where: { clientId },
     });
   }
 
-  async updateLinkedTrainerRoutines(linkedTrainerId: number, routines: any[]): Promise<LinkedTrainer> {
+  async updateLinkedTrainerRoutines(
+    linkedTrainerId: number,
+    routines: any[],
+  ): Promise<LinkedTrainer> {
     const linked = await this.linkedTrainerRepository.findOne({
       where: { id: linkedTrainerId },
     });
