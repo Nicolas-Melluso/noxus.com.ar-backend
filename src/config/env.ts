@@ -43,7 +43,7 @@ const EnvSchema = z.object({
     .url('TWITCH_REDIRECT_URI must be a valid URL'),
   BOT_USER_ID: z
     .string()
-    .regex(/^\d+$/, 'BOT_USER_ID must be a numeric Twitch user id'),
+    .regex(/^\d+$/, 'BOT_USER_ID must be a numeric Twitch user ID'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
