@@ -46,11 +46,18 @@ Optional values have defaults:
 
 - `NODE_ENV=development`
 - `PORT=3000`
-- `H_PORT=3306`
+- `DB_HOST=localhost`
+- `DB_PORT=3306`
+- `DB_NAME=u119350622_dbprincipal`
 - `FRONTEND_URL=https://noxus.com.ar`
+- `CORS_ORIGINS=https://noxus.com.ar`
 - `OAUTH2_CALLBACK_URL=http://localhost:3000/api/auth/oauth2/callback`
 - `OAUTH2_AUTH_URL=https://example.com/oauth2/authorize`
 - `OAUTH2_TOKEN_URL=https://example.com/oauth2/token`
+
+Database credentials must be provided as `DB_USER` and `DB_PASSWORD`.
+The older `H_*` database variables are still accepted as aliases.
+Feedback IP hashing requires `FEEDBACK_IP_SALT`.
 
 ## Compile and run the project
 

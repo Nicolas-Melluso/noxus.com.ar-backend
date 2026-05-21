@@ -10,6 +10,8 @@ import { FinanzasModule } from './finanzas/finanzas.module';
 import { FixusModule } from './fixus/fixus.module';
 import { NoxuraModule } from './noxura/noxura.module';
 import { validateEnv } from './config/env';
+import { FeedbackModule } from './feedback/feedback.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -19,11 +21,11 @@ import { validateEnv } from './config/env';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.H_HOST,
-      port: Number(process.env.H_PORT),
-      username: process.env.H_USER,
-      password: process.env.H_PASS,
-      database: process.env.H_DB_NAME,
+      host: process.env.DB_HOST || process.env.H_HOST,
+      port: Number(process.env.DB_PORT || process.env.H_PORT),
+      username: process.env.DB_USER || process.env.H_USER,
+      password: process.env.DB_PASSWORD || process.env.H_PASS,
+      database: process.env.DB_NAME || process.env.H_DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
     }),
@@ -34,8 +36,9 @@ import { validateEnv } from './config/env';
     FinanzasModule,
     FixusModule,
     NoxuraModule,
+    FeedbackModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [AppService],
 })
 export class AppModule {}

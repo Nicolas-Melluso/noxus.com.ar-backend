@@ -5,16 +5,25 @@ const EnvSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
-  H_HOST: z.string().min(1, 'H_HOST is required'),
+  DB_HOST: z.string().min(1).optional(),
+  DB_PORT: z.coerce.number().int().positive().optional(),
+  DB_NAME: z.string().min(1).optional(),
+  DB_USER: z.string().min(1).optional(),
+  DB_PASSWORD: z.string().min(1).optional(),
+  H_HOST: z.string().min(1).default('localhost'),
   H_PORT: z.coerce.number().int().positive().default(3306),
-  H_USER: z.string().min(1, 'H_USER is required'),
-  H_PASS: z.string().min(1, 'H_PASS is required'),
-  H_DB_NAME: z.string().min(1, 'H_DB_NAME is required'),
+  H_USER: z.string().min(1).optional(),
+  H_PASS: z.string().min(1).optional(),
+  H_DB_NAME: z.string().min(1).default('u119350622_dbprincipal'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   FRONTEND_URL: z
     .string()
     .url('FRONTEND_URL must be a valid URL')
     .default('https://noxus.com.ar'),
+  CORS_ORIGINS: z.string().optional(),
+  FEEDBACK_IP_SALT: z
+    .string()
+    .min(16, 'FEEDBACK_IP_SALT must be at least 16 characters'),
   OAUTH2_CLIENT_ID: z.string().min(1, 'OAUTH2_CLIENT_ID is required'),
   OAUTH2_CLIENT_SECRET: z.string().min(1, 'OAUTH2_CLIENT_SECRET is required'),
   OAUTH2_CALLBACK_URL: z
@@ -44,6 +53,22 @@ const EnvSchema = z.object({
   BOT_USER_ID: z
     .string()
     .regex(/^\d+$/, 'BOT_USER_ID must be a numeric Twitch user ID'),
+}).superRefine((env, ctx) => {
+  if (!env.DB_USER && !env.H_USER) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['DB_USER'],
+      message: 'DB_USER is required',
+    });
+  }
+
+  if (!env.DB_PASSWORD && !env.H_PASS) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['DB_PASSWORD'],
+      message: 'DB_PASSWORD is required',
+    });
+  }
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -58,9 +83,23 @@ export function validateEnv(rawEnv: Record<string, unknown>): Env {
     throw new Error(`Environment validation failed:\n${issues}`);
   }
 
-  for (const [key, value] of Object.entries(result.data)) {
+  const data = {
+    ...result.data,
+    DB_HOST: result.data.DB_HOST || result.data.H_HOST,
+    DB_PORT: result.data.DB_PORT || result.data.H_PORT,
+    DB_NAME: result.data.DB_NAME || result.data.H_DB_NAME,
+    DB_USER: result.data.DB_USER || result.data.H_USER,
+    DB_PASSWORD: result.data.DB_PASSWORD || result.data.H_PASS,
+    H_HOST: result.data.DB_HOST || result.data.H_HOST,
+    H_PORT: result.data.DB_PORT || result.data.H_PORT,
+    H_DB_NAME: result.data.DB_NAME || result.data.H_DB_NAME,
+    H_USER: result.data.DB_USER || result.data.H_USER,
+    H_PASS: result.data.DB_PASSWORD || result.data.H_PASS,
+  };
+
+  for (const [key, value] of Object.entries(data)) {
     process.env[key] = String(value);
   }
 
-  return result.data;
+  return data;
 }
